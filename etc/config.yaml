@@ -1,0 +1,27 @@
+# EXAMPLE
+Service:  
+  Name: "seat-service"
+  Host: "0.0.0.0"
+  Port: 8080
+
+Log:
+  File: "/var/log/seat-api.log"  # 日志文件路径
+  Level: "debug"  # 日志级别
+  MaxSize: 100  # 文件最大大小
+  MaxAge: 7     # 日志保留天数
+
+MySQL:
+  Name: "seat_database"         
+  User: "root"                  
+  Password: "password"         
+  Host: "localhost"             
+  Port: 3306                    
+
+Redis:
+  Host: "localhost"            
+  Port: 6379                    
+  Password: "redis_password"    
+
+Auth:
+  AccessSecret: "your_jwt_secret_key"  # JWT 密钥
+  AccessExpire: 3600                # JWT Token 过期时间（单位：秒）
