@@ -3,13 +3,7 @@ Service:
   Name: "seat-service"
   Host: "0.0.0.0"
   Port: 8080
-
-Log:
-  File: "/var/log/seat-api.log"  # 日志文件路径
-  Level: "debug"  # 日志级别
-  MaxSize: 100  # 文件最大大小
-  MaxAge: 7     # 日志保留天数
-
+  
 MySQL:
   Name: "seat_database"         
   User: "root"                  

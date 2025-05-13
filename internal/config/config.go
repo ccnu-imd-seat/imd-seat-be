@@ -12,13 +12,6 @@ type Config struct {
 		AccessExpire int64
 	}
 
-	Log struct {
-		File    string
-		Level   string
-		Maxsize int
-		MaxAge  int
-	}
-
 	MySQL struct {
 		Name     string
 		User     string
