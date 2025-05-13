@@ -1,6 +1,8 @@
 package config
 
 import (
+	"fmt"
+
 	"github.com/zeromicro/go-zero/rest"
 )
 
@@ -25,4 +27,14 @@ type Config struct {
 		Port     int
 		Password string
 	}
+}
+
+func (c Config) DSN() string {
+	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=true&loc=Local",
+		c.MySQL.User,
+		c.MySQL.Password,
+		c.MySQL.Host,
+		c.MySQL.Port,
+		c.MySQL.Name,
+	)
 }
