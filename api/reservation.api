@@ -17,8 +17,7 @@ type (
   }
 
   ReserveSeatRes {
-    Code    int             `json:"code"`
-    Message string          `json:"message"`
+    Base
     Data    ReservationData `json:"data"`
   }
 
@@ -32,8 +31,7 @@ type (
   }
 
   AvailableDatesRes {
-    Code    int            `json:"code"`
-    Message string         `json:"message"`
+    Base
     Data    AvailableDates `json:"data"`
   }
 
@@ -49,8 +47,7 @@ type (
   }
 
   SeatListRes {
-    Code    int          `json:"code"`
-    Message string       `json:"message"`
+    Base
     Data    SeatListData `json:"data"`
   }
 )

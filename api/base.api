@@ -1,0 +1,6 @@
+syntax =  "v1"
+
+type Base {
+    Code int    `json:"code"`
+    Message  string `json:"message"`
+}

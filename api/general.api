@@ -1,11 +1,12 @@
 syntax = "v1"
 
+import "base.api"
+
 type (
   EmptyData {}
 
   GeneralRes {
-    Code    int       `json:"code"`
-    Message string    `json:"message"`
+    Base
     Data    EmptyData `json:"data"`
   }
 )

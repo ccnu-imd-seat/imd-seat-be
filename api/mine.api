@@ -11,8 +11,7 @@ type (
   }
 
   MyReservationRes {
-    Code    int                `json:"code"`
-    Message string             `json:"message"`
+    Base
     Data    ReservationDetails `json:"data"`
   }
 

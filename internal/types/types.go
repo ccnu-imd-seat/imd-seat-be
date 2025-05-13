@@ -8,9 +8,13 @@ type AvailableDates struct {
 }
 
 type AvailableDatesRes struct {
-	Code    int            `json:"code"`
-	Message string         `json:"message"`
-	Data    AvailableDates `json:"data"`
+	Base
+	Data AvailableDates `json:"data"`
+}
+
+type Base struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
 }
 
 type DateInfo struct {
@@ -26,9 +30,8 @@ type FeedbackReq struct {
 }
 
 type GeneralRes struct {
-	Code    int       `json:"code"`
-	Message string    `json:"message"`
-	Data    EmptyData `json:"data"`
+	Base
+	Data EmptyData `json:"data"`
 }
 
 type LoginData struct {
@@ -42,15 +45,13 @@ type LoginReq struct {
 }
 
 type LoginRes struct {
-	Code    int       `json:"code"`
-	Message string    `json:"message"`
-	Data    LoginData `json:"data"`
+	Base
+	Data LoginData `json:"data"`
 }
 
 type MyReservationRes struct {
-	Code    int                `json:"code"`
-	Message string             `json:"message"`
-	Data    ReservationDetails `json:"data"`
+	Base
+	Data ReservationDetails `json:"data"`
 }
 
 type ReservationData struct {
@@ -78,9 +79,8 @@ type ReserveSeatReq struct {
 }
 
 type ReserveSeatRes struct {
-	Code    int             `json:"code"`
-	Message string          `json:"message"`
-	Data    ReservationData `json:"data"`
+	Base
+	Data ReservationData `json:"data"`
 }
 
 type RoomList struct {
@@ -88,9 +88,8 @@ type RoomList struct {
 }
 
 type RoomListRes struct {
-	Code    int      `json:"code"`
-	Message string   `json:"message"`
-	Data    RoomList `json:"data"`
+	Base
+	Data RoomList `json:"data"`
 }
 
 type SeatInfo struct {
@@ -105,7 +104,6 @@ type SeatListData struct {
 }
 
 type SeatListRes struct {
-	Code    int          `json:"code"`
-	Message string       `json:"message"`
-	Data    SeatListData `json:"data"`
+	Base
+	Data SeatListData `json:"data"`
 }

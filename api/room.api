@@ -6,8 +6,7 @@ type (
   }
 
   RoomListRes {
-    Code    int      `json:"code"`
-    Message string   `json:"message"`
+    Base
     Data    RoomList `json:"data"`
   }
 )

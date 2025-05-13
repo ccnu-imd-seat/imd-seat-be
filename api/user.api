@@ -12,8 +12,7 @@ type (
   }
 
   LoginRes {
-    Code    int       `json:"code"`
-    Message string    `json:"message"`
+    Base
     Data    LoginData `json:"data"`
   }
 )
