@@ -1,0 +1,22 @@
+syntax = "v1"
+
+type (
+  RoomList {
+    Rooms []string `json:"rooms"`
+  }
+
+  RoomListRes {
+    Code    int      `json:"code"`
+    Message string   `json:"message"`
+    Data    RoomList `json:"data"`
+  }
+)
+
+@server(
+    jwt: Auth
+)
+
+service seat-api {
+  @handler getRooms
+  get /reservation/rooms returns (RoomListRes)
+}

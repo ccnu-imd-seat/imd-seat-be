@@ -1,0 +1,28 @@
+syntax = "v1"
+
+type (
+  LoginReq {
+    Username string `json:"username"`
+    Password string `json:"password"`
+  }
+
+  LoginData {
+    Name      string `json:"name"`
+    StudentId string `json:"student_id"`
+  }
+
+  LoginRes {
+    Code    int       `json:"code"`
+    Message string    `json:"message"`
+    Data    LoginData `json:"data"`
+  }
+)
+
+@server(
+    jwt: Auth
+)
+
+service seat-api {
+  @handler login
+  post /api/login (LoginReq) returns (LoginRes)
+}
