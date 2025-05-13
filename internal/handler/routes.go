@@ -13,22 +13,33 @@ import (
 
 func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 	server.AddRoutes(
+		[]rest.Route{},
+		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
+		rest.WithPrefix("/api/v1"),
+	)
+
+	server.AddRoutes(
 		[]rest.Route{
-			{
-				Method:  http.MethodGet,
-				Path:    "/api/checkin",
-				Handler: checkInHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/api/login",
-				Handler: loginHandler(serverCtx),
-			},
 			{
 				Method:  http.MethodPost,
 				Path:    "/feedback",
 				Handler: submitFeedbackHandler(serverCtx),
 			},
+		},
+	)
+
+	server.AddRoutes(
+		[]rest.Route{
+			{
+				Method:  http.MethodGet,
+				Path:    "/reservation/rooms",
+				Handler: getRoomsHandler(serverCtx),
+			},
+		},
+	)
+
+	server.AddRoutes(
+		[]rest.Route{
 			{
 				Method:  http.MethodGet,
 				Path:    "/mine/reservations",
@@ -39,6 +50,11 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Path:    "/mine/violations",
 				Handler: getViolationHandler(serverCtx),
 			},
+		},
+	)
+
+	server.AddRoutes(
+		[]rest.Route{
 			{
 				Method:  http.MethodDelete,
 				Path:    "/reservation/cancel/:id",
@@ -56,15 +72,29 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			},
 			{
 				Method:  http.MethodGet,
-				Path:    "/reservation/rooms",
-				Handler: getRoomsHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodGet,
 				Path:    "/reservation/seats",
 				Handler: getSeatInfoHandler(serverCtx),
 			},
 		},
-		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
+	)
+
+	server.AddRoutes(
+		[]rest.Route{
+			{
+				Method:  http.MethodPost,
+				Path:    "/login",
+				Handler: loginHandler(serverCtx),
+			},
+		},
+	)
+
+	server.AddRoutes(
+		[]rest.Route{
+			{
+				Method:  http.MethodGet,
+				Path:    "/checkin",
+				Handler: checkInHandler(serverCtx),
+			},
+		},
 	)
 }

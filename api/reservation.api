@@ -22,14 +22,6 @@ type (
     Data    ReservationData `json:"data"`
   }
 
-  EmptyData {}
-
-  GeneralRes {
-    Code    int       `json:"code"`
-    Message string    `json:"message"`
-    Data    EmptyData `json:"data"`
-  }
-
   DateInfo {
     Type string `json:"type"`
     Date string `json:"date"`
@@ -61,10 +53,6 @@ type (
     Message string       `json:"message"`
     Data    SeatListData `json:"data"`
   }
-)
-
-@server(
-    jwt: Auth
 )
 
 service seat-api {

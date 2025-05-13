@@ -16,17 +16,6 @@ type (
     Data    ReservationDetails `json:"data"`
   }
 
-  EmptyData {}
-
-  GeneralRes {
-    Code    int       `json:"code"`
-    Message string    `json:"message"`
-    Data    EmptyData `json:"data"`
-  }
-)
-
-@server(
-    jwt: Auth
 )
 
 service seat-api {

@@ -1,0 +1,18 @@
+syntax = "v1"
+
+import (
+	"./checkin.api"
+	"./feedback.api"
+	"./room.api"
+	"./mine.api"
+	"./reservation.api"
+	"./user.api"
+	"./general.api"
+)
+
+@server (
+	prefix: "/api/v1"
+	jwt:    Auth
+)
+service seat-api {}
+

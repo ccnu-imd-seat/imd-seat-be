@@ -12,10 +12,6 @@ type (
   }
 )
 
-@server(
-    jwt: Auth
-)
-
 service seat-api {
   @handler getRooms
   get /reservation/rooms returns (RoomListRes)

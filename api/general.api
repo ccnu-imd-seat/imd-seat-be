@@ -1,0 +1,11 @@
+syntax = "v1"
+
+type (
+  EmptyData {}
+
+  GeneralRes {
+    Code    int       `json:"code"`
+    Message string    `json:"message"`
+    Data    EmptyData `json:"data"`
+  }
+)

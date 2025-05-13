@@ -1,20 +1,6 @@
 syntax = "v1"
 
-type (
-  EmptyData {}
-
-  GeneralRes {
-    Code    int       `json:"code"`
-    Message string    `json:"message"`
-    Data    EmptyData `json:"data"`
-  }
-)
-
-@server(
-    jwt: Auth
-)
-
 service seat-api {
   @handler checkIn
-  get /api/checkin returns (GeneralRes)
+  get /checkin returns (GeneralRes)
 }

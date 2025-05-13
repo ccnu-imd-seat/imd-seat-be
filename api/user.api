@@ -18,11 +18,7 @@ type (
   }
 )
 
-@server(
-    jwt: Auth
-)
-
 service seat-api {
   @handler login
-  post /api/login (LoginReq) returns (LoginRes)
+  post /login (LoginReq) returns (LoginRes)
 }
