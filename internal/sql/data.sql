@@ -10,6 +10,7 @@ CREATE TABLE `seat` (
 
 CREATE TABLE `reservation` (
   `id` INT NOT NULL AUTO_INCREMENT COMMENT '预约 ID',
+  `student_id` VARCHAR(50) NOT NULL COMMENT '学号',
   `type` VARCHAR(20) NOT NULL COMMENT '预约类型',
   `date` DATE NOT NULL COMMENT '预约日期',
   `room` VARCHAR(50) NOT NULL COMMENT '房间',
