@@ -1,0 +1,12 @@
+syntax = "v1"
+
+import "base.api"
+
+type (
+  EmptyData {}
+
+  GeneralRes {
+    Base
+    Data    EmptyData `json:"data"`
+  }
+)

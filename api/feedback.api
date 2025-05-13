@@ -1,0 +1,12 @@
+syntax = "v1"
+
+type (
+  FeedbackReq {
+    Content string `json:"content"`
+  }
+)
+
+service seat-api {
+  @handler submitFeedback
+  post /feedback (FeedbackReq) returns (GeneralRes)
+}

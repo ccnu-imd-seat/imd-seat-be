@@ -1,0 +1,21 @@
+# EXAMPLE
+Service:  
+  Name: "seat-service"
+  Host: "0.0.0.0"
+  Port: 8080
+  
+MySQL:
+  Name: "seat_database"         
+  User: "root"                  
+  Password: "password"         
+  Host: "localhost"             
+  Port: 3306                    
+
+Redis:
+  Host: "localhost"            
+  Port: 6379                    
+  Password: "redis_password"    
+
+Auth:
+  AccessSecret: "your_jwt_secret_key"  # JWT 密钥
+  AccessExpire: 3600                # JWT Token 过期时间（单位：秒）

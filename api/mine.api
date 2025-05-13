@@ -1,0 +1,26 @@
+syntax = "v1"
+
+type (
+  ReservationDetails {
+    ID     int    `json:"id"`
+    Type   string `json:"type"`
+    Date   string `json:"date"`
+    Room   string `json:"room"`
+    SeatID int    `json:"seat_id"`
+    Status string `json:"status"`
+  }
+
+  MyReservationRes {
+    Base
+    Data    ReservationDetails `json:"data"`
+  }
+
+)
+
+service seat-api {
+  @handler getMyReservation
+  get /mine/reservations returns (MyReservationRes)
+
+  @handler getViolation
+  get /mine/violations returns (GeneralRes)
+}

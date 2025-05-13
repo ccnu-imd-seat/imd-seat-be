@@ -1,0 +1,6 @@
+syntax = "v1"
+
+service seat-api {
+  @handler checkIn
+  get /checkin returns (GeneralRes)
+}

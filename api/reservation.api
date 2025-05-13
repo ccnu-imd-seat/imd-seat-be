@@ -1,0 +1,67 @@
+syntax = "v1"
+
+type (
+  ReserveSeatReq {
+    Type   string `json:"type"`
+    Date   string `json:"date"`
+    Room   string `json:"room"`
+    SeatID int    `json:"seat_id"`
+  }
+
+  ReservationData {
+    RoomID        int    `json:"room_id"`
+    Seat          string `json:"seat"`
+    Date          string `json:"date"`
+    Type          string `json:"type"`
+    ReservationID int    `json:"reservation_id"`
+  }
+
+  ReserveSeatRes {
+    Base
+    Data    ReservationData `json:"data"`
+  }
+
+  DateInfo {
+    Type string `json:"type"`
+    Date string `json:"date"`
+  }
+
+  AvailableDates {
+    Dates []DateInfo `json:"dates"`
+  }
+
+  AvailableDatesRes {
+    Base
+    Data    AvailableDates `json:"data"`
+  }
+
+  SeatInfo {
+    SeatID int    `json:"seat_id"`
+    Status string `json:"status"`
+  }
+
+  SeatListData {
+    Room  string     `json:"room"`
+    Date  string     `json:"date"`
+    Seats []SeatInfo `json:"seats"`
+  }
+
+  SeatListRes {
+    Base
+    Data    SeatListData `json:"data"`
+  }
+)
+
+service seat-api {
+  @handler reserveSeat
+  post /reservation/reserve (ReserveSeatReq) returns (ReserveSeatRes)
+
+  @handler cancelReservation
+  delete /reservation/cancel/:id returns (GeneralRes)
+
+  @handler getAvailableDays
+  get /reservation/days returns (AvailableDatesRes)
+
+  @handler getSeatInfo
+  get /reservation/seats returns (SeatListRes)
+}
