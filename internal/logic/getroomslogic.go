@@ -24,7 +24,21 @@ func NewGetRoomsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetRooms
 }
 
 func (l *GetRoomsLogic) GetRooms() (resp *types.RoomListRes, err error) {
-	// todo: add your logic here and delete this line
-
+	resp=&types.RoomListRes{}
+	Rooms,err:=l.svcCtx.RoomModel.GetAvailableRoom(l.ctx,"available")
+	if err!=nil{
+		resp.Base.Code=500
+		resp.Base.Message="获取可预约房间失败"
+		return
+	}
+	var roominfro []string
+	for _,room:=range Rooms{
+		roominfro=append(roominfro,room.Room)
+	}
+	resp.Base.Code=200
+	resp.Base.Message="获取可预约房间成功"
+	resp.Data=types.RoomList{
+		Rooms: roominfro,
+	}
 	return
 }

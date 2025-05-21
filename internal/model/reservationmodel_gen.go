@@ -46,7 +46,7 @@ type (
 		Type      string    `db:"type"`       // 预约类型
 		Date      time.Time `db:"date"`       // 预约日期
 		Room      string    `db:"room"`       // 房间
-		SeatId    int64     `db:"seat_id"`    // 座位 ID
+		Seat      string    `db:"seat"`       // 座位编号
 		Status    string    `db:"status"`     // 预约状态
 	}
 )
@@ -88,7 +88,7 @@ func (m *defaultReservationModel) Insert(ctx context.Context, data *Reservation)
 	reservationIdKey := fmt.Sprintf("%s%v", cacheReservationIdPrefix, data.Id)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?)", m.table, reservationRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.StudentId, data.Type, data.Date, data.Room, data.SeatId, data.Status)
+		return conn.ExecCtx(ctx, query, data.StudentId, data.Type, data.Date, data.Room, data.Seat, data.Status)
 	}, reservationIdKey)
 	return ret, err
 }
@@ -97,7 +97,7 @@ func (m *defaultReservationModel) Update(ctx context.Context, data *Reservation)
 	reservationIdKey := fmt.Sprintf("%s%v", cacheReservationIdPrefix, data.Id)
 	_, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, reservationRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, data.StudentId, data.Type, data.Date, data.Room, data.SeatId, data.Status, data.Id)
+		return conn.ExecCtx(ctx, query, data.StudentId, data.Type, data.Date, data.Room, data.Seat, data.Status, data.Id)
 	}, reservationIdKey)
 	return err
 }
