@@ -76,13 +76,13 @@ func (m *defaultReservationModel) FindOne(ctx context.Context, id int64) (*Reser
 
 func (m *defaultReservationModel) Insert(ctx context.Context, data *Reservation) (sql.Result, error) {
 	query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?)", m.table, reservationRowsExpectAutoSet)
-	ret, err := m.conn.ExecCtx(ctx, query, data.StudentId, data.Type, data.Date, data.Room, data.SeatId, data.Status)
+	ret, err := m.conn.ExecCtx(ctx, query, data.StudentId, data.Type, data.Date, data.Room, data.Seat, data.Status)
 	return ret, err
 }
 
 func (m *defaultReservationModel) Update(ctx context.Context, data *Reservation) error {
 	query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, reservationRowsWithPlaceHolder)
-	_, err := m.conn.ExecCtx(ctx, query, data.StudentId, data.Type, data.Date, data.Room, data.SeatId, data.Status, data.Id)
+	_, err := m.conn.ExecCtx(ctx, query, data.StudentId, data.Type, data.Date, data.Room, data.Seat, data.Status, data.Id)
 	return err
 }
 
