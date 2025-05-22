@@ -5,11 +5,11 @@ type (
     Type   string `json:"type"`
     Date   string `json:"date"`
     Room   string `json:"room"`
-    SeatID int    `json:"seat_id"`
+    SeatID string    `json:"seat_id"`
   }
 
   ReservationData {
-    RoomID        int    `json:"room_id"`
+    RoomID        string    `json:"room_id"`
     Seat          string `json:"seat"`
     Date          string `json:"date"`
     Type          string `json:"type"`
@@ -49,6 +49,10 @@ type (
   SeatListRes {
     Base
     Data    SeatListData `json:"data"`
+  }
+
+  CancelReservationReq {
+    ID string `path:"id"`
   }
 )
 

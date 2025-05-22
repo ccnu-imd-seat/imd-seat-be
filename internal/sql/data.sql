@@ -14,7 +14,14 @@ CREATE TABLE `reservation` (
   `type` VARCHAR(20) NOT NULL COMMENT '预约类型',
   `date` DATE NOT NULL COMMENT '预约日期',
   `room` VARCHAR(50) NOT NULL COMMENT '房间',
-  `seat_id` INT NOT NULL COMMENT '座位 ID',
+  `seat` VARCHAR(50) NOT NULL COMMENT '座位编号',
+  `status` VARCHAR(20) NOT NULL COMMENT '预约状态',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `room` (
+  `id` INT NOT NULL AUTO_INCREMENT COMMENT '房间 ID',
+  `room` VARCHAR(50) NOT NULL COMMENT '房间',
   `status` VARCHAR(20) NOT NULL COMMENT '预约状态',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
