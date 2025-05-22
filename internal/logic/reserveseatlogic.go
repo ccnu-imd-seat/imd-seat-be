@@ -41,7 +41,7 @@ func (l *ReserveSeatLogic) ReserveSeat(req *types.ReserveSeatReq) (resp *types.R
 		Date:t,
 		Room:req.Room,
 		Seat: req.SeatID,
-		Status: "booked",
+		Status: types.BookedStatus,
 	}
 	re,err:=l.svcCtx.ReservationModel.Insert(l.ctx,&ReservationInfro)
 	if err!=nil{

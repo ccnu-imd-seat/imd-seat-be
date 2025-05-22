@@ -16,7 +16,7 @@ type (
 	// and implement the added methods in customSeatModel.
 	SeatModel interface {
 		GetSeatInfobyDateAndID(ctx context.Context, date time.Time, roomid string) ([]*Seat, error)
-		UpdateSeatsStatusAndDate(ctx context.Context, date time.Time) error
+		ChangeSeatStatus(ctx context.Context,date time.Time,status,seat string)error
 		seatModel
 	}
 
@@ -36,10 +36,10 @@ func (c *customSeatModel) GetSeatInfobyDateAndID(ctx context.Context, date time.
 	return seats, nil
 }
 
-// 更新所有座位的日期和状态信息
-func (c *customSeatModel) UpdateSeatsStatusAndDate(ctx context.Context, date time.Time) error {
-	query := fmt.Sprintf("update %s set `status` = ? and `date` = ?", c.table)
-	_, err := c.ExecNoCacheCtx(ctx, query, "available", date)
+//改变座位状态
+func(c *customSeatModel)ChangeSeatStatus(ctx context.Context,date time.Time,status,seat string)error{
+	query:=fmt.Sprintf("update %s set `status` = ? where `seat` = ? and `date` = ?",c.table)
+	err:=c.QueryRowNoCacheCtx(ctx,query,status,seat,date)
 	return err
 }
 
