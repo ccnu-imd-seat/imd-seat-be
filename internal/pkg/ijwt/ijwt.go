@@ -1,40 +1,46 @@
 package ijwt
 
 import (
+	"net/http"
 	"strings"
 
-	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 )
 
 type JWTHandler struct {
+	Secret []byte
 }
 
-// ExtractToken 从请求中提取并返回 JWT
-func (r *JWTHandler) ExtractToken(ctx *gin.Context) string {
-	authCode := ctx.GetHeader("Authorization")
-	if authCode == "" {
+func NewJWTHandler(secret string) *JWTHandler {
+	return &JWTHandler{
+		Secret: []byte(secret),
+	}
+}
+
+// ExtractToken
+func (r *JWTHandler) ExtractToken(headerValue string) string {
+	if headerValue == "" {
 		return ""
 	}
-	segs := strings.Split(authCode, " ")
+	segs := strings.Split(headerValue, " ")
 	if len(segs) != 2 {
 		return ""
 	}
 	return segs[1]
 }
 
-// SetJWTToken 生成并设置用户的 JWT
-func (r *JWTHandler) SetJWTToken(ctx *gin.Context, cp ClaimParams) error {
+// SetJWTToken 生成并设置 JWT 到响应头
+func (r *JWTHandler) SetJWTToken(w http.ResponseWriter, cp ClaimParams) error {
 	uc := UserClaims{
 		StudentId: cp.StudentId,
 		Password:  cp.Password,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, uc)
-	tokenStr, err := token.SignedString(token)
+	tokenStr, err := token.SignedString(r.Secret)
 	if err != nil {
 		return err
 	}
-	ctx.Header("x-jwt-token", tokenStr)
+	w.Header().Set("x-jwt-token", tokenStr)
 	return nil
 }
 

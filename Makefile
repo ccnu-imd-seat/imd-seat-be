@@ -4,6 +4,6 @@ api:
 	goctl api go -api api/index.api -dir . --style=none
 
 .PHONY: curd
-struct:
+curd:
 	@echo "Generating crud"
-	goctl model mysql ddl -src sql/data.sql -dir ./internal/model -c
+	goctl model mysql ddl -src internal/sql/data.sql -dir ./internal/model -c --cache=false
