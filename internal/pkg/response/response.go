@@ -1,7 +1,8 @@
-package resp
+package response
 
 import (
 	"imd-seat-be/internal/pkg/errorx"
+	"imd-seat-be/internal/types"
 	"net/http"
 )
 
@@ -11,11 +12,10 @@ type Result struct {
 	Data any    `json:"data"`
 }
 
-func Success(data any) *Result {
-	return &Result{
-		Code: 200,
-		Msg:  "success",
-		Data: data,
+func Success() types.Base {
+	return types.Base{
+		Code:    200,
+		Message: "success",
 	}
 }
 
