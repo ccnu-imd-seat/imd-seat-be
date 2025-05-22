@@ -10,8 +10,10 @@ import (
 
 func getSeatInfoHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		date := r.URL.Query().Get("date")
+		room := r.URL.Query().Get("room")
 		l := logic.NewGetSeatInfoLogic(r.Context(), svcCtx)
-		resp, err := l.GetSeatInfo()
+		resp, err := l.GetSeatInfo(date,room)
 		if err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)
 		} else {

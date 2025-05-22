@@ -10,8 +10,9 @@ import (
 
 func getAvailableDaysHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		Type := r.URL.Query().Get("type")
 		l := logic.NewGetAvailableDaysLogic(r.Context(), svcCtx)
-		resp, err := l.GetAvailableDays()
+		resp, err := l.GetAvailableDays(Type)
 		if err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)
 		} else {

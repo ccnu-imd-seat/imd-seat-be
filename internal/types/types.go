@@ -17,6 +17,10 @@ type Base struct {
 	Message string `json:"message"`
 }
 
+type CancelReservationReq struct {
+	ID string `path:"id"`
+}
+
 type DateInfo struct {
 	Type string `json:"type"`
 	Date string `json:"date"`
@@ -55,7 +59,7 @@ type MyReservationRes struct {
 }
 
 type ReservationData struct {
-	RoomID        int    `json:"room_id"`
+	RoomID        string `json:"room_id"`
 	Seat          string `json:"seat"`
 	Date          string `json:"date"`
 	Type          string `json:"type"`
@@ -75,7 +79,7 @@ type ReserveSeatReq struct {
 	Type   string `json:"type"`
 	Date   string `json:"date"`
 	Room   string `json:"room"`
-	SeatID int    `json:"seat_id"`
+	SeatID string `json:"seat_id"`
 }
 
 type ReserveSeatRes struct {

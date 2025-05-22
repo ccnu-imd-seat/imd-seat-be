@@ -42,7 +42,7 @@ type (
 		Type      string    `db:"type"`       // 预约类型
 		Date      time.Time `db:"date"`       // 预约日期
 		Room      string    `db:"room"`       // 房间
-		SeatId    int64     `db:"seat_id"`    // 座位 ID
+		Seat      string    `db:"seat"`       // 座位编号
 		Status    string    `db:"status"`     // 预约状态
 	}
 )
