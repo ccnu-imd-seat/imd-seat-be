@@ -12,8 +12,6 @@ import (
 	"time"
 
 	"github.com/zeromicro/go-zero/core/stores/builder"
-	"github.com/zeromicro/go-zero/core/stores/cache"
-	"github.com/zeromicro/go-zero/core/stores/sqlc"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 	"github.com/zeromicro/go-zero/core/stringx"
 )
@@ -23,8 +21,6 @@ var (
 	reservationRows                = strings.Join(reservationFieldNames, ",")
 	reservationRowsExpectAutoSet   = strings.Join(stringx.Remove(reservationFieldNames, "`id`", "`create_at`", "`create_time`", "`created_at`", "`update_at`", "`update_time`", "`updated_at`"), ",")
 	reservationRowsWithPlaceHolder = strings.Join(stringx.Remove(reservationFieldNames, "`id`", "`create_at`", "`create_time`", "`created_at`", "`update_at`", "`update_time`", "`updated_at`"), "=?,") + "=?"
-
-	cacheReservationIdPrefix = "cache:reservation:id:"
 )
 
 type (
@@ -36,7 +32,7 @@ type (
 	}
 
 	defaultReservationModel struct {
-		sqlc.CachedConn
+		conn  sqlx.SqlConn
 		table string
 	}
 
@@ -51,33 +47,27 @@ type (
 	}
 )
 
-func newReservationModel(conn sqlx.SqlConn, c cache.CacheConf, opts ...cache.Option) *defaultReservationModel {
+func newReservationModel(conn sqlx.SqlConn) *defaultReservationModel {
 	return &defaultReservationModel{
-		CachedConn: sqlc.NewConn(conn, c, opts...),
-		table:      "`reservation`",
+		conn:  conn,
+		table: "`reservation`",
 	}
 }
 
 func (m *defaultReservationModel) Delete(ctx context.Context, id int64) error {
-	reservationIdKey := fmt.Sprintf("%s%v", cacheReservationIdPrefix, id)
-	_, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("delete from %s where `id` = ?", m.table)
-		return conn.ExecCtx(ctx, query, id)
-	}, reservationIdKey)
+	query := fmt.Sprintf("delete from %s where `id` = ?", m.table)
+	_, err := m.conn.ExecCtx(ctx, query, id)
 	return err
 }
 
 func (m *defaultReservationModel) FindOne(ctx context.Context, id int64) (*Reservation, error) {
-	reservationIdKey := fmt.Sprintf("%s%v", cacheReservationIdPrefix, id)
+	query := fmt.Sprintf("select %s from %s where `id` = ? limit 1", reservationRows, m.table)
 	var resp Reservation
-	err := m.QueryRowCtx(ctx, &resp, reservationIdKey, func(ctx context.Context, conn sqlx.SqlConn, v any) error {
-		query := fmt.Sprintf("select %s from %s where `id` = ? limit 1", reservationRows, m.table)
-		return conn.QueryRowCtx(ctx, v, query, id)
-	})
+	err := m.conn.QueryRowCtx(ctx, &resp, query, id)
 	switch err {
 	case nil:
 		return &resp, nil
-	case sqlc.ErrNotFound:
+	case sqlx.ErrNotFound:
 		return nil, ErrNotFound
 	default:
 		return nil, err
@@ -85,30 +75,15 @@ func (m *defaultReservationModel) FindOne(ctx context.Context, id int64) (*Reser
 }
 
 func (m *defaultReservationModel) Insert(ctx context.Context, data *Reservation) (sql.Result, error) {
-	reservationIdKey := fmt.Sprintf("%s%v", cacheReservationIdPrefix, data.Id)
-	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?)", m.table, reservationRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.StudentId, data.Type, data.Date, data.Room, data.Seat, data.Status)
-	}, reservationIdKey)
+	query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?)", m.table, reservationRowsExpectAutoSet)
+	ret, err := m.conn.ExecCtx(ctx, query, data.StudentId, data.Type, data.Date, data.Room, data.Seat, data.Status)
 	return ret, err
 }
 
 func (m *defaultReservationModel) Update(ctx context.Context, data *Reservation) error {
-	reservationIdKey := fmt.Sprintf("%s%v", cacheReservationIdPrefix, data.Id)
-	_, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, reservationRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, data.StudentId, data.Type, data.Date, data.Room, data.Seat, data.Status, data.Id)
-	}, reservationIdKey)
+	query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, reservationRowsWithPlaceHolder)
+	_, err := m.conn.ExecCtx(ctx, query, data.StudentId, data.Type, data.Date, data.Room, data.Seat, data.Status, data.Id)
 	return err
-}
-
-func (m *defaultReservationModel) formatPrimary(primary any) string {
-	return fmt.Sprintf("%s%v", cacheReservationIdPrefix, primary)
-}
-
-func (m *defaultReservationModel) queryPrimary(ctx context.Context, conn sqlx.SqlConn, v, primary any) error {
-	query := fmt.Sprintf("select %s from %s where `id` = ? limit 1", reservationRows, m.table)
-	return conn.QueryRowCtx(ctx, v, query, primary)
 }
 
 func (m *defaultReservationModel) tableName() string {

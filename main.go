@@ -7,15 +7,17 @@ import (
 
 	"imd-seat-be/internal/config"
 	"imd-seat-be/internal/handler"
+	"imd-seat-be/internal/pkg/response"
 	"imd-seat-be/internal/svc"
 	"imd-seat-be/internal/task"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 	"github.com/zeromicro/go-zero/rest"
+	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
-var configFile = flag.String("f", "etc/seat-api.yaml", "the config file")
+var configFile = flag.String("f", "etc/config.yaml", "the config file")
 
 func main() {
 	flag.Parse()
@@ -25,6 +27,8 @@ func main() {
 
 	server := rest.MustNewServer(c.RestConf)
 	defer server.Stop()
+
+	httpx.SetErrorHandler(response.ErrHandler)
 
 	DB := sqlx.NewMysql(c.DSN())
 	ctx := svc.NewServiceContext(c, DB)

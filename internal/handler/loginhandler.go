@@ -3,10 +3,12 @@ package handler
 import (
 	"net/http"
 
-	"github.com/zeromicro/go-zero/rest/httpx"
 	"imd-seat-be/internal/logic"
+	"imd-seat-be/internal/pkg/ijwt"
 	"imd-seat-be/internal/svc"
 	"imd-seat-be/internal/types"
+
+	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
 func loginHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
@@ -22,6 +24,13 @@ func loginHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 		if err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)
 		} else {
+			err = svcCtx.JWTHandler.SetJWTToken(w, ijwt.ClaimParams{
+				StudentId: req.Username,
+				Password:  req.Password,
+			})
+			if err != nil {
+				httpx.ErrorCtx(r.Context(), w, err)
+			}
 			httpx.OkJsonCtx(r.Context(), w, resp)
 		}
 	}
