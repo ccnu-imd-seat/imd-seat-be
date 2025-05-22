@@ -5,6 +5,7 @@ go 1.24.0
 require (
 	github.com/PuerkitoBio/goquery v1.10.3
 	github.com/golang-jwt/jwt/v4 v4.5.2
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/zeromicro/go-zero v1.8.3
 )
