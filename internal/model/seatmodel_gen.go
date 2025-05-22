@@ -12,8 +12,6 @@ import (
 	"time"
 
 	"github.com/zeromicro/go-zero/core/stores/builder"
-	"github.com/zeromicro/go-zero/core/stores/cache"
-	"github.com/zeromicro/go-zero/core/stores/sqlc"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 	"github.com/zeromicro/go-zero/core/stringx"
 )
@@ -23,9 +21,6 @@ var (
 	seatRows                = strings.Join(seatFieldNames, ",")
 	seatRowsExpectAutoSet   = strings.Join(stringx.Remove(seatFieldNames, "`id`", "`create_at`", "`create_time`", "`created_at`", "`update_at`", "`update_time`", "`updated_at`"), ",")
 	seatRowsWithPlaceHolder = strings.Join(stringx.Remove(seatFieldNames, "`id`", "`create_at`", "`create_time`", "`created_at`", "`update_at`", "`update_time`", "`updated_at`"), "=?,") + "=?"
-
-	cacheSeatIdPrefix           = "cache:seat:id:"
-	cacheSeatSeatRoomDatePrefix = "cache:seat:seat:room:date:"
 )
 
 type (
@@ -38,7 +33,7 @@ type (
 	}
 
 	defaultSeatModel struct {
-		sqlc.CachedConn
+		conn  sqlx.SqlConn
 		table string
 	}
 
@@ -51,39 +46,27 @@ type (
 	}
 )
 
-func newSeatModel(conn sqlx.SqlConn, c cache.CacheConf, opts ...cache.Option) *defaultSeatModel {
+func newSeatModel(conn sqlx.SqlConn) *defaultSeatModel {
 	return &defaultSeatModel{
-		CachedConn: sqlc.NewConn(conn, c, opts...),
-		table:      "`seat`",
+		conn:  conn,
+		table: "`seat`",
 	}
 }
 
 func (m *defaultSeatModel) Delete(ctx context.Context, id int64) error {
-	data, err := m.FindOne(ctx, id)
-	if err != nil {
-		return err
-	}
-
-	seatIdKey := fmt.Sprintf("%s%v", cacheSeatIdPrefix, id)
-	seatSeatRoomDateKey := fmt.Sprintf("%s%v:%v:%v", cacheSeatSeatRoomDatePrefix, data.Seat, data.Room, data.Date)
-	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("delete from %s where `id` = ?", m.table)
-		return conn.ExecCtx(ctx, query, id)
-	}, seatIdKey, seatSeatRoomDateKey)
+	query := fmt.Sprintf("delete from %s where `id` = ?", m.table)
+	_, err := m.conn.ExecCtx(ctx, query, id)
 	return err
 }
 
 func (m *defaultSeatModel) FindOne(ctx context.Context, id int64) (*Seat, error) {
-	seatIdKey := fmt.Sprintf("%s%v", cacheSeatIdPrefix, id)
+	query := fmt.Sprintf("select %s from %s where `id` = ? limit 1", seatRows, m.table)
 	var resp Seat
-	err := m.QueryRowCtx(ctx, &resp, seatIdKey, func(ctx context.Context, conn sqlx.SqlConn, v any) error {
-		query := fmt.Sprintf("select %s from %s where `id` = ? limit 1", seatRows, m.table)
-		return conn.QueryRowCtx(ctx, v, query, id)
-	})
+	err := m.conn.QueryRowCtx(ctx, &resp, query, id)
 	switch err {
 	case nil:
 		return &resp, nil
-	case sqlc.ErrNotFound:
+	case sqlx.ErrNotFound:
 		return nil, ErrNotFound
 	default:
 		return nil, err
@@ -91,19 +74,13 @@ func (m *defaultSeatModel) FindOne(ctx context.Context, id int64) (*Seat, error)
 }
 
 func (m *defaultSeatModel) FindOneBySeatRoomDate(ctx context.Context, seat string, room string, date time.Time) (*Seat, error) {
-	seatSeatRoomDateKey := fmt.Sprintf("%s%v:%v:%v", cacheSeatSeatRoomDatePrefix, seat, room, date)
 	var resp Seat
-	err := m.QueryRowIndexCtx(ctx, &resp, seatSeatRoomDateKey, m.formatPrimary, func(ctx context.Context, conn sqlx.SqlConn, v any) (i any, e error) {
-		query := fmt.Sprintf("select %s from %s where `seat` = ? and `room` = ? and `date` = ? limit 1", seatRows, m.table)
-		if err := conn.QueryRowCtx(ctx, &resp, query, seat, room, date); err != nil {
-			return nil, err
-		}
-		return resp.Id, nil
-	}, m.queryPrimary)
+	query := fmt.Sprintf("select %s from %s where `seat` = ? and `room` = ? and `date` = ? limit 1", seatRows, m.table)
+	err := m.conn.QueryRowCtx(ctx, &resp, query, seat, room, date)
 	switch err {
 	case nil:
 		return &resp, nil
-	case sqlc.ErrNotFound:
+	case sqlx.ErrNotFound:
 		return nil, ErrNotFound
 	default:
 		return nil, err
@@ -111,37 +88,15 @@ func (m *defaultSeatModel) FindOneBySeatRoomDate(ctx context.Context, seat strin
 }
 
 func (m *defaultSeatModel) Insert(ctx context.Context, data *Seat) (sql.Result, error) {
-	seatIdKey := fmt.Sprintf("%s%v", cacheSeatIdPrefix, data.Id)
-	seatSeatRoomDateKey := fmt.Sprintf("%s%v:%v:%v", cacheSeatSeatRoomDatePrefix, data.Seat, data.Room, data.Date)
-	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?)", m.table, seatRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.Seat, data.Room, data.Date, data.Status)
-	}, seatIdKey, seatSeatRoomDateKey)
+	query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?)", m.table, seatRowsExpectAutoSet)
+	ret, err := m.conn.ExecCtx(ctx, query, data.Seat, data.Room, data.Date, data.Status)
 	return ret, err
 }
 
 func (m *defaultSeatModel) Update(ctx context.Context, newData *Seat) error {
-	data, err := m.FindOne(ctx, newData.Id)
-	if err != nil {
-		return err
-	}
-
-	seatIdKey := fmt.Sprintf("%s%v", cacheSeatIdPrefix, data.Id)
-	seatSeatRoomDateKey := fmt.Sprintf("%s%v:%v:%v", cacheSeatSeatRoomDatePrefix, data.Seat, data.Room, data.Date)
-	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, seatRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, newData.Seat, newData.Room, newData.Date, newData.Status, newData.Id)
-	}, seatIdKey, seatSeatRoomDateKey)
+	query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, seatRowsWithPlaceHolder)
+	_, err := m.conn.ExecCtx(ctx, query, newData.Seat, newData.Room, newData.Date, newData.Status, newData.Id)
 	return err
-}
-
-func (m *defaultSeatModel) formatPrimary(primary any) string {
-	return fmt.Sprintf("%s%v", cacheSeatIdPrefix, primary)
-}
-
-func (m *defaultSeatModel) queryPrimary(ctx context.Context, conn sqlx.SqlConn, v, primary any) error {
-	query := fmt.Sprintf("select %s from %s where `id` = ? limit 1", seatRows, m.table)
-	return conn.QueryRowCtx(ctx, v, query, primary)
 }
 
 func (m *defaultSeatModel) tableName() string {

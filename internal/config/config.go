@@ -21,12 +21,6 @@ type Config struct {
 		Host     string
 		Port     int
 	}
-
-	Redis struct {
-		Host     string
-		Port     int
-		Password string
-	}
 }
 
 func (c Config) DSN() string {
