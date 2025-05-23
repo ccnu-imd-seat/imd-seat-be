@@ -16,7 +16,8 @@ var (
 
 // 数据库模块失败（3000-3999）
 var (
-	FetchErr = NewError(3001, "数据库查询失败")
+	FetchErr  = NewError(3001, "数据库查询失败")
+	CreateErr = NewError(3002, "数据库创建失败")
 )
 
 var DefaultErr = NewError(5000, "非预设错误")

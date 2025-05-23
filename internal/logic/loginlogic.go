@@ -13,6 +13,7 @@ import (
 	"regexp"
 	"strings"
 
+	"imd-seat-be/internal/model"
 	"imd-seat-be/internal/pkg/errorx"
 	"imd-seat-be/internal/pkg/response"
 	"imd-seat-be/internal/svc"
@@ -20,6 +21,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/zeromicro/go-zero/core/logx"
+	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
 
 type LoginLogic struct {
@@ -58,6 +60,18 @@ func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginRes, err error
 	username, err := l.GetNameFromXK(l.ctx, client)
 	if err != nil {
 		return nil, err
+	}
+
+	_, err = l.svcCtx.UserModel.FindScoreByID(l.ctx, req.Username)
+	if err == sqlx.ErrNotFound {
+		newUser := &model.User{
+			StudentId: req.Username,
+			Score:     300,
+		}
+		_, err = l.svcCtx.UserModel.Insert(l.ctx, newUser)
+		if err != nil {
+			return nil, errorx.WrapError(errorx.CreateErr, err)
+		}
 	}
 
 	resp = &types.LoginRes{

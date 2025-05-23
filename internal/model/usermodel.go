@@ -32,7 +32,7 @@ func NewUserModel(conn sqlx.SqlConn) UserModel {
 
 // 获取信誉分
 func (m *customUserModel) FindScoreByID(ctx context.Context, studentID string) (int, error) {
-	query := fmt.Sprintf("select %s from %s where `student_id = ?`", userRows, m.table)
+	query := fmt.Sprintf("select %s from %s where `student_id` = ?", userRows, m.table)
 	var user User
 	err := m.conn.QueryRowCtx(ctx, &user, query, studentID)
 	if err != nil {
