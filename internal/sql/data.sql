@@ -25,3 +25,9 @@ CREATE TABLE `room` (
   `status` VARCHAR(20) NOT NULL COMMENT '预约状态',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `user` (
+  `student_id` VARCHAR(50) NOT NULL COMMENT '学号',
+  `score` INT NOT NULL DEFAULT 300 COMMENT '信誉分',
+  PRIMARY KEY (`student_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
