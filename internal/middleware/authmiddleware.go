@@ -13,6 +13,10 @@ import (
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
+type AuthKey string
+
+const studentIDKey AuthKey = "student_id"
+
 type AuthMiddleware struct {
 	Cfg config.Config
 	r   ijwt.JWTHandler
@@ -38,7 +42,7 @@ func (m *AuthMiddleware) AuthHandle(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 		//将学号信息写入context
-		ctx := context.WithValue(r.Context(), "student_id", claims.StudentId)
+		ctx := context.WithValue(r.Context(), studentIDKey, claims.StudentId)
 		r = r.WithContext(ctx)
 		next(w, r)
 	}
