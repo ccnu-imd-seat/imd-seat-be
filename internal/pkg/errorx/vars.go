@@ -18,3 +18,5 @@ var (
 var (
 	FetchErr = NewError(3001, "数据库查询失败")
 )
+
+var DefaultErr = NewError(5000, "非预设错误")

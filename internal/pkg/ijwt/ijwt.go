@@ -27,17 +27,17 @@ func (r *JWTHandlerImpl) SetJWTToken(w http.ResponseWriter, cp ClaimParams) erro
 	uc := UserClaims{
 		StudentId: cp.StudentId,
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, uc)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &uc)
 	tokenStr, err := token.SignedString(r.Secret)
 	if err != nil {
 		return err
 	}
-	w.Header().Set("x-jwt-token", tokenStr)
+	w.Header().Set("x-jwt-token", "Bearer "+tokenStr)
 	return nil
 }
 
 func (r *JWTHandlerImpl) ParseToken(tokenStr string) (*UserClaims, error) {
-	token, err := jwt.ParseWithClaims(tokenStr, UserClaims{}, func(t *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenStr, &UserClaims{}, func(t *jwt.Token) (interface{}, error) {
 		return []byte(r.Secret), nil
 	})
 	if err != nil {
@@ -54,9 +54,9 @@ func (r *JWTHandlerImpl) ParseToken(tokenStr string) (*UserClaims, error) {
 // UserClaims 定义了 JWT 中用户相关的声明
 type UserClaims struct {
 	jwt.RegisteredClaims
-	StudentId string
+	StudentId string `json:"student_id"`
 }
 
 type ClaimParams struct {
-	StudentId string
+	StudentId string `json:"student_id"`
 }
