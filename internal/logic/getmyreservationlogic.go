@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"imd-seat-be/internal/pkg/contextx"
+	"imd-seat-be/internal/pkg/errorx"
 	"imd-seat-be/internal/pkg/response"
 	"imd-seat-be/internal/svc"
 	"imd-seat-be/internal/types"
@@ -29,12 +30,12 @@ func NewGetMyReservationLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 func (l *GetMyReservationLogic) GetMyReservation() (resp *types.MyReservationRes, err error) {
 	studentID, ok := contextx.GetStudentID(l.ctx)
 	if !ok {
-		return nil, errors.New("token读取学号失败")
+		return nil, errorx.WrapError(errorx.JWTError, errors.New("token读取学号失败"))
 	}
 
 	reservations, err := l.svcCtx.ReservationModel.GetReservationByStudentId(l.ctx, studentID)
 	if err != nil {
-		return nil, err
+		return nil, errorx.WrapError(errorx.FetchErr, err)
 	}
 
 	var data []types.ReservationDetails

@@ -24,7 +24,7 @@ func NewGetViolationLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetV
 }
 
 func (l *GetViolationLogic) GetViolation() (resp *types.GeneralRes, err error) {
-	// todo: add your logic here and delete this line
+	
 
 	return
 }
