@@ -7,18 +7,23 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type JWTHandler struct {
+type JWTHandler interface {
+	SetJWTToken(w http.ResponseWriter, cp ClaimParams) error
+	ParseToken(tokenStr string) (*UserClaims, error)
+}
+
+type JWTHandlerImpl struct {
 	Secret []byte
 }
 
-func NewJWTHandler(secret string) *JWTHandler {
-	return &JWTHandler{
+func NewJWTHandler(secret string) JWTHandler {
+	return &JWTHandlerImpl{
 		Secret: []byte(secret),
 	}
 }
 
 // SetJWTToken 生成并设置 JWT 到响应头
-func (r *JWTHandler) SetJWTToken(w http.ResponseWriter, cp ClaimParams) error {
+func (r *JWTHandlerImpl) SetJWTToken(w http.ResponseWriter, cp ClaimParams) error {
 	uc := UserClaims{
 		StudentId: cp.StudentId,
 		Password:  cp.Password,
@@ -32,7 +37,7 @@ func (r *JWTHandler) SetJWTToken(w http.ResponseWriter, cp ClaimParams) error {
 	return nil
 }
 
-func (r *JWTHandler) ParseToken(tokenStr string) (*UserClaims, error) {
+func (r *JWTHandlerImpl) ParseToken(tokenStr string) (*UserClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenStr, UserClaims{}, func(t *jwt.Token) (interface{}, error) {
 		return []byte(r.Secret), nil
 	})

@@ -15,10 +15,10 @@ import (
 
 type AuthMiddleware struct {
 	Cfg config.Config
-	r   *ijwt.JWTHandler
+	r   ijwt.JWTHandler
 }
 
-func NewAuthMiddleware(cfg config.Config, r *ijwt.JWTHandler) *AuthMiddleware {
+func NewAuthMiddleware(cfg config.Config, r ijwt.JWTHandler) *AuthMiddleware {
 	return &AuthMiddleware{Cfg: cfg,
 		r: r}
 }

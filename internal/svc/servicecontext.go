@@ -14,7 +14,7 @@ import (
 
 type ServiceContext struct {
 	Config           config.Config
-	JWTHandler       *ijwt.JWTHandler
+	JWTHandler       ijwt.JWTHandler
 	AuthMiddleware   func(handlerFunc http.HandlerFunc) http.HandlerFunc
 	SeatModel        model.SeatModel
 	ReservationModel model.ReservationModel
