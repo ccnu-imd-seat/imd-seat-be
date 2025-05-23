@@ -71,7 +71,7 @@ type ReservationDetails struct {
 	Type   string `json:"type"`
 	Date   string `json:"date"`
 	Room   string `json:"room"`
-	SeatID int    `json:"seat_id"`
+	SeatID string `json:"seat_id"`
 	Status string `json:"status"`
 }
 
