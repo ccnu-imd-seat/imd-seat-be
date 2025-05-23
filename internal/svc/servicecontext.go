@@ -17,6 +17,7 @@ type ServiceContext struct {
 	AuthMiddleware   func(handlerFunc http.HandlerFunc) http.HandlerFunc
 	SeatModel        model.SeatModel
 	ReservationModel model.ReservationModel
+	UserModel        model.UserModel
 	RoomModel        model.RoomModel
 }
 
@@ -30,6 +31,7 @@ func NewServiceContext(c config.Config, conn sqlx.SqlConn) *ServiceContext {
 		SeatModel:        model.NewSeatModel(conn),
 		ReservationModel: model.NewReservationModel(conn),
 		AuthMiddleware:   AuthMiddleware,
+		UserModel:        model.NewUserModel(conn),
 		RoomModel:        model.NewRoomModel(conn),
 	}
 }
