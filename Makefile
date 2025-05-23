@@ -1,7 +1,7 @@
 .PHONY: api
 api:
 	@echo "Generating api..."
-	goctl api go -api api/index.api -dir . --style=none
+	goctl api go --api api/index.api --dir . 
 
 .PHONY: curd
 curd:

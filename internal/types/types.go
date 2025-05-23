@@ -55,7 +55,7 @@ type LoginRes struct {
 
 type MyReservationRes struct {
 	Base
-	Data ReservationDetails `json:"data"`
+	Data []ReservationDetails `json:"data"`
 }
 
 type ReservationData struct {

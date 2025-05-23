@@ -1,23 +1,22 @@
 syntax = "v1"
 
 type (
-  LoginReq {
-    Username string `json:"username"`
-    Password string `json:"password"`
-  }
-
-  LoginData {
-    Name      string `json:"name"`
-    StudentId string `json:"student_id"`
-  }
-
-  LoginRes {
-    Base
-    Data    LoginData `json:"data"`
-  }
+	LoginReq {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+	LoginData {
+		Name      string `json:"name"`
+		StudentId string `json:"student_id"`
+	}
+	LoginRes {
+		Base
+		Data LoginData `json:"data"`
+	}
 )
 
 service seat-api {
-  @handler login
-  post /login (LoginReq) returns (LoginRes)
+	@handler login
+	post /login (LoginReq) returns (LoginRes)
 }
+
