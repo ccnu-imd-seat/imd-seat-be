@@ -2,7 +2,11 @@ package logic
 
 import (
 	"context"
+	"errors"
 
+	"imd-seat-be/internal/pkg/contextx"
+	"imd-seat-be/internal/pkg/errorx"
+	"imd-seat-be/internal/pkg/response"
 	"imd-seat-be/internal/svc"
 	"imd-seat-be/internal/types"
 
@@ -24,7 +28,22 @@ func NewGetScoreLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetScore
 }
 
 func (l *GetScoreLogic) GetScore() (resp *types.MyScoreRes, err error) {
-	// todo: add your logic here and delete this line
+	studentID, ok := contextx.GetStudentID(l.ctx)
+	if !ok {
+		return nil, errorx.WrapError(errorx.JWTError, errors.New("token读取学号失败"))
+	}
 
-	return
+	score, err := l.svcCtx.UserModel.FindScoreByID(l.ctx, studentID)
+	if err != nil {
+		return nil, errorx.WrapError(errorx.FetchErr, err)
+	}
+
+	resp = &types.MyScoreRes{
+		Base: response.Success(),
+		Data: types.ScoreData{
+			Score: score,
+		},
+	}
+
+	return resp, nil
 }
