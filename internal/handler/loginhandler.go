@@ -26,7 +26,6 @@ func loginHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 		} else {
 			err = svcCtx.JWTHandler.SetJWTToken(w, ijwt.ClaimParams{
 				StudentId: req.Username,
-				Password:  req.Password,
 			})
 			if err != nil {
 				httpx.ErrorCtx(r.Context(), w, err)

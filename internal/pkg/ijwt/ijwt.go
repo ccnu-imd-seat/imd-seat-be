@@ -26,7 +26,6 @@ func NewJWTHandler(secret string) JWTHandler {
 func (r *JWTHandlerImpl) SetJWTToken(w http.ResponseWriter, cp ClaimParams) error {
 	uc := UserClaims{
 		StudentId: cp.StudentId,
-		Password:  cp.Password,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, uc)
 	tokenStr, err := token.SignedString(r.Secret)
@@ -56,10 +55,8 @@ func (r *JWTHandlerImpl) ParseToken(tokenStr string) (*UserClaims, error) {
 type UserClaims struct {
 	jwt.RegisteredClaims
 	StudentId string
-	Password  string
 }
 
 type ClaimParams struct {
 	StudentId string
-	Password  string
 }
