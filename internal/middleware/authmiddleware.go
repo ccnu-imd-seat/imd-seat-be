@@ -1,21 +1,17 @@
 package middleware
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"strings"
 
 	"imd-seat-be/internal/config"
+	"imd-seat-be/internal/pkg/contextx"
 	"imd-seat-be/internal/pkg/ijwt"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
-
-type AuthKey string
-
-const studentIDKey AuthKey = "student_id"
 
 type AuthMiddleware struct {
 	Cfg config.Config
@@ -41,8 +37,8 @@ func (m *AuthMiddleware) AuthHandle(next http.HandlerFunc) http.HandlerFunc {
 			httpx.ErrorCtx(r.Context(), w, err)
 			return
 		}
-		//将学号信息写入context
-		ctx := context.WithValue(r.Context(), studentIDKey, claims.StudentId)
+		// 将学号信息写入context
+		ctx := contextx.SetStudentID(r.Context(), claims.StudentId)
 		r = r.WithContext(ctx)
 		next(w, r)
 	}
