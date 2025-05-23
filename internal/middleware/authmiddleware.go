@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"imd-seat-be/internal/config"
-	"imd-seat-be/internal/utils"
+	"imd-seat-be/internal/pkg/ijwt"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest/httpx"
@@ -15,10 +15,12 @@ import (
 
 type AuthMiddleware struct {
 	Cfg config.Config
+	r   *ijwt.JWTHandler
 }
 
-func NewAuthMiddleware(cfg config.Config) *AuthMiddleware {
-	return &AuthMiddleware{Cfg: cfg}
+func NewAuthMiddleware(cfg config.Config, r *ijwt.JWTHandler) *AuthMiddleware {
+	return &AuthMiddleware{Cfg: cfg,
+		r: r}
 }
 
 func (m *AuthMiddleware) AuthHandle(next http.HandlerFunc) http.HandlerFunc {
@@ -29,14 +31,14 @@ func (m *AuthMiddleware) AuthHandle(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 		token := strings.TrimPrefix(AuthHeader, "Bearer ")
-		claims, err := utils.ParseToken(m.Cfg.Auth.AccessSecret, token)
+		claims, err := m.r.ParseToken(token)
 		if err != nil {
 			logx.Errorf("解析token失败:%v", err)
 			httpx.ErrorCtx(r.Context(), w, err)
 			return
 		}
 		//将学号信息写入context
-		ctx := context.WithValue(r.Context(), "student_id", claims.StudentID)
+		ctx := context.WithValue(r.Context(), "student_id", claims.StudentId)
 		r = r.WithContext(ctx)
 		next(w, r)
 	}

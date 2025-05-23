@@ -1,8 +1,8 @@
 package ijwt
 
 import (
+	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -15,18 +15,6 @@ func NewJWTHandler(secret string) *JWTHandler {
 	return &JWTHandler{
 		Secret: []byte(secret),
 	}
-}
-
-// ExtractToken
-func (r *JWTHandler) ExtractToken(headerValue string) string {
-	if headerValue == "" {
-		return ""
-	}
-	segs := strings.Split(headerValue, " ")
-	if len(segs) != 2 {
-		return ""
-	}
-	return segs[1]
 }
 
 // SetJWTToken 生成并设置 JWT 到响应头
@@ -42,6 +30,21 @@ func (r *JWTHandler) SetJWTToken(w http.ResponseWriter, cp ClaimParams) error {
 	}
 	w.Header().Set("x-jwt-token", tokenStr)
 	return nil
+}
+
+func (r *JWTHandler) ParseToken(tokenStr string) (*UserClaims, error) {
+	token, err := jwt.ParseWithClaims(tokenStr, UserClaims{}, func(t *jwt.Token) (interface{}, error) {
+		return []byte(r.Secret), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// 将接口类型断言成结构类型
+	if claims, ok := token.Claims.(*UserClaims); ok && token.Valid {
+		return claims, nil
+	}
+	return nil, fmt.Errorf("invalid token")
 }
 
 // UserClaims 定义了 JWT 中用户相关的声明

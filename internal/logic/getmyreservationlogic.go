@@ -24,7 +24,7 @@ func NewGetMyReservationLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 }
 
 func (l *GetMyReservationLogic) GetMyReservation() (resp *types.MyReservationRes, err error) {
-	// todo: add your logic here and delete this line
+	l.svcCtx.ReservationModel.GetReservationByStudentId(l.ctx,)
 
 	return
 }

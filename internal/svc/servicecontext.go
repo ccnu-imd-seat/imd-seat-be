@@ -21,14 +21,16 @@ type ServiceContext struct {
 	RoomModel        model.RoomModel
 }
 
-// 待修
 func NewServiceContext(c config.Config, conn sqlx.SqlConn) *ServiceContext {
+	JWTHandler := ijwt.NewJWTHandler(c.Auth.AccessSecret)
+	AuthMiddleware := middleware.NewAuthMiddleware(c, JWTHandler).AuthHandle
+
 	return &ServiceContext{
 		Config:           c,
-		JWTHandler:       ijwt.NewJWTHandler(c.Auth.AccessSecret),
+		JWTHandler:       JWTHandler,
 		SeatModel:        model.NewSeatModel(conn),
 		ReservationModel: model.NewReservationModel(conn),
-		AuthMiddleware:   middleware.NewAuthMiddleware(c).AuthHandle,
+		AuthMiddleware:   AuthMiddleware,
 		RoomModel:        model.NewRoomModel(conn, cache.ClusterConf{}),
 	}
 }

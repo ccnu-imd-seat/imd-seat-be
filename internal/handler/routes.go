@@ -21,7 +21,7 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			},
 		},
 		rest.WithPrefix("/api/v1"),
-	)
+	) 
 
 	AuthRoutes:=[]rest.Route{
 		{
