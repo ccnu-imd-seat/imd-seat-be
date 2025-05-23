@@ -58,6 +58,11 @@ type MyReservationRes struct {
 	Data []ReservationDetails `json:"data"`
 }
 
+type MyScoreRes struct {
+	Base
+	Data ScoreData `json:"data"`
+}
+
 type ReservationData struct {
 	RoomID        string `json:"room_id"`
 	Seat          string `json:"seat"`
@@ -94,6 +99,10 @@ type RoomList struct {
 type RoomListRes struct {
 	Base
 	Data RoomList `json:"data"`
+}
+
+type ScoreData struct {
+	Score int `json:"score"`
 }
 
 type SeatInfo struct {

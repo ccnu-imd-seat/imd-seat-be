@@ -9,22 +9,22 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-type GetViolationLogic struct {
+type GetScoreLogic struct {
 	logx.Logger
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
 }
 
-func NewGetViolationLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetViolationLogic {
-	return &GetViolationLogic{
+func NewGetScoreLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetScoreLogic {
+	return &GetScoreLogic{
 		Logger: logx.WithContext(ctx),
 		ctx:    ctx,
 		svcCtx: svcCtx,
 	}
 }
 
-func (l *GetViolationLogic) GetViolation() (resp *types.GeneralRes, err error) {
-	
+func (l *GetScoreLogic) GetScore() (resp *types.MyScoreRes, err error) {
+	// todo: add your logic here and delete this line
 
 	return
 }

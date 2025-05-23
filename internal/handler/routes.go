@@ -46,8 +46,8 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			},
 			{
 				Method:  http.MethodGet,
-				Path:    "/mine/violations",
-				Handler: getViolationHandler(serverCtx),
+				Path:    "/mine/score",
+				Handler: getScoreHandler(serverCtx),
 			},
 			{
 				Method:  http.MethodDelete,
