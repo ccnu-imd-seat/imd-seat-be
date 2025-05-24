@@ -32,7 +32,7 @@ func (r *JWTHandlerImpl) SetJWTToken(w http.ResponseWriter, cp ClaimParams) erro
 	if err != nil {
 		return err
 	}
-	w.Header().Set("x-jwt-token", "Bearer "+tokenStr)
+	w.Header().Set("x-jwt-token", tokenStr)
 	return nil
 }
 

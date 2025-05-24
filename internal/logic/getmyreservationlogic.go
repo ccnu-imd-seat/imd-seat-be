@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"errors"
+	"time"
 
 	"imd-seat-be/internal/pkg/contextx"
 	"imd-seat-be/internal/pkg/errorx"
@@ -45,7 +46,7 @@ func (l *GetMyReservationLogic) GetMyReservation() (resp *types.MyReservationRes
 		data = append(data, types.ReservationDetails{
 			ID:     int(res.Id),
 			Type:   res.Type,
-			Date:   res.Date.Format("2006-01-02"),
+			Date:   res.Date.Format(time.DateOnly),
 			Room:   res.Room,
 			SeatID: res.Seat,
 			Status: res.Status,
