@@ -2,9 +2,12 @@ package logic
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
+	"imd-seat-be/internal/pkg/errorx"
+	"imd-seat-be/internal/pkg/response"
 	"imd-seat-be/internal/svc"
 	"imd-seat-be/internal/types"
 
@@ -26,31 +29,25 @@ func NewGetAvailableDaysLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 }
 
 func (l *GetAvailableDaysLogic) GetAvailableDays(Type string) (resp *types.AvailableDatesRes, err error) {
-	resp = &types.AvailableDatesRes{}
 	//获取当前时间
 	now := time.Now()
 	if Type == "week" {
 		if now.Weekday() != time.Sunday || !InTimeRange(now, 9, 18) {
-			resp.Base.Code = 400
-			resp.Base.Message = "未到预约时间"
-			err = fmt.Errorf("未到可预约时间")
-			return
+			return nil, errorx.WrapError(errorx.ViolateErr, errors.New("不在可预约时间内"))
 		}
 		now = now.AddDate(0, 0, 1)
 	} else if Type == "day" {
 		if !InTimeRange(now, 18, 21) {
-			resp.Base.Code = 400
-			resp.Base.Message = "未到预约时间"
-			err = fmt.Errorf("未到可预约时间")
-			return
+			return nil, errorx.WrapError(errorx.ViolateErr, errors.New("不在可预约时间内"))
 		}
 	} else {
-		return nil, fmt.Errorf("输入无效，请重试！")
+		return nil, errorx.WrapError(errorx.DefaultErr, errors.New("输入无效"))
 	}
-	resp.Data = GetThisWeekDays(now, Type)
-	resp.Base.Code = 200
-	resp.Base.Message = "获取日期成功"
-	return
+	resp = &types.AvailableDatesRes{
+		Base: response.Success(),
+		Data: GetThisWeekDays(now, Type),
+	}
+	return resp, nil
 }
 
 // 获取本周剩余日期

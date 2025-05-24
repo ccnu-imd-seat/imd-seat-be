@@ -4,9 +4,11 @@ import (
 	"context"
 	"log"
 	"time"
+	"errors"
 
 	"imd-seat-be/internal/svc"
 	"imd-seat-be/internal/types"
+	"imd-seat-be/internal/pkg/errorx"
 
 	"github.com/robfig/cron/v3"
 )
@@ -38,18 +40,23 @@ func Violation(ctx context.Context, svcCtx *svc.ServiceContext) error {
 	now := time.Now().Format("2006-01-02")
 	parsedTime, err := time.Parse("2006-01-02", now)
 	if err != nil {
-		return err
+		return errorx.WrapError(errorx.DefaultErr,errors.New("解析时间错误"))
 	}
 	Reservations, err := svcCtx.ReservationModel.GetReservationByStatus(ctx, parsedTime, types.EffectiveStatus)
 	if err != nil {
-		return err
+		return errorx.WrapError(errorx.FetchErr,err)
 	}
+	var FailedIds []int64
 	for _, reservation := range Reservations {
 		err := svcCtx.ReservationModel.UpdateReservstionMessage(ctx, reservation.Id, types.ViolatedStatus)
 		if err != nil {
 			log.Printf("更新id:%d的预约状态失败%v", reservation.Id, err)
+			FailedIds=append(FailedIds,reservation.Id)
 			continue
 		}
+	}
+	if len(FailedIds)>0{
+		return errorx.WrapError(errorx.UpdateErr,errors.New("部分预约记录状态更新失败"))
 	}
 	return nil
 }
