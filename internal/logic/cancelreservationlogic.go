@@ -4,8 +4,11 @@ import (
 	"context"
 	"strconv"
 	"time"
+	"errors"
 
 	"imd-seat-be/internal/model"
+	"imd-seat-be/internal/pkg/errorx"
+	"imd-seat-be/internal/pkg/response"
 	"imd-seat-be/internal/svc"
 	"imd-seat-be/internal/types"
 
@@ -27,41 +30,31 @@ func NewCancelReservationLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 }
 
 func (l *CancelReservationLogic) CancelReservation(req *types.CancelReservationReq) (resp *types.GeneralRes, err error) {
-	resp = &types.GeneralRes{}
 	ID, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
-		resp.Base.Code = 500
-		resp.Base.Message = "ID 转换失败"
-		return
+		return nil,errorx.WrapError(errorx.DefaultErr,errors.New("ID转换失败"))
 	}
 	//获取预约信息
 	ReservationInfro, err := l.svcCtx.ReservationModel.FindOne(l.ctx, ID)
 	if err != nil {
-		resp.Base.Code = 500
-		resp.Base.Message = "查询预约记录失败"
-		return
+		return nil,errorx.WrapError(errorx.FetchErr,err)
 	}
 	if !l.CheckCancelRule(ReservationInfro) {
-		resp.Base.Code = 400
-		resp.Base.Message = "取消请求不合规"
-		return
+		return nil,errorx.WrapError(errorx.ViolateErr,errors.New("取消请求不合规"))
 	}
 	err = l.svcCtx.ReservationModel.Delete(l.ctx, ID)
-	if err != nil {
-		resp.Base.Code = 500
-		resp.Base.Message = "取消预约失败"
-		return
+	if err != nil{
+		return nil,errorx.WrapError(errorx.DeleteErr,err)
 	}
 	//释放座位，改状态为可预约
 	err=l.svcCtx.SeatModel.ChangeSeatStatus(l.ctx,ReservationInfro.Date,types.AvaliableStatus,ReservationInfro.Seat)
 	if err != nil {
-		resp.Base.Code = 500
-		resp.Base.Message = "释放座位失败"
-		return
+		return nil,errorx.WrapError(errorx.UpdateErr,err)
 	}
-	resp.Base.Code = 200
-	resp.Base.Message = "取消预约成功"
-	return
+	resp=&types.GeneralRes{
+		Base: response.Success(),
+	}
+	return resp,nil
 }
 
 // 检验取消时间是否符合规则

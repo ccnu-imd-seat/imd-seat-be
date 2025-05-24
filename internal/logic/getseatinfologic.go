@@ -2,8 +2,11 @@ package logic
 
 import (
 	"context"
+	"errors"
 	"time"
 
+	"imd-seat-be/internal/pkg/errorx"
+	"imd-seat-be/internal/pkg/response"
 	"imd-seat-be/internal/svc"
 	"imd-seat-be/internal/types"
 
@@ -25,19 +28,14 @@ func NewGetSeatInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetSe
 }
 
 func (l *GetSeatInfoLogic) GetSeatInfo(date, room string) (resp *types.SeatListRes, err error) {
-	resp = &types.SeatListRes{}
 	format := "2006-01-02"
 	t, err := time.Parse(format, date)
 	if err != nil {
-		resp.Base.Code = 400
-		resp.Base.Message = "日期格式错误"
-		return
+		return nil, errorx.WrapError(errorx.DefaultErr, errors.New("解析时间失败"))
 	}
 	seatinfro, err := l.svcCtx.SeatModel.GetSeatInfobyDateAndID(l.ctx, t, room)
 	if err != nil {
-		resp.Base.Code = 500
-		resp.Base.Message = "获取座位信息失败！"
-		return
+		return nil, errorx.WrapError(errorx.FetchErr, err)
 	}
 	var SeatInfro []types.SeatInfo
 	for _, seat := range seatinfro {
@@ -46,12 +44,13 @@ func (l *GetSeatInfoLogic) GetSeatInfo(date, room string) (resp *types.SeatListR
 			Status: seat.Status,
 		})
 	}
-	resp.Base.Code = 200
-	resp.Base.Message = "获取座位数据成功!"
-	resp.Data = types.SeatListData{
-		Room:  room,
-		Date:  date,
-		Seats: SeatInfro,
+	resp = &types.SeatListRes{
+		Base: response.Success(),
+		Data: types.SeatListData{
+			Room:  room,
+			Date:  date,
+			Seats: SeatInfro,
+		},
 	}
-	return
+	return resp, nil
 }

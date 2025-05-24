@@ -2,9 +2,12 @@ package logic
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"imd-seat-be/internal/model"
+	"imd-seat-be/internal/pkg/errorx"
+	"imd-seat-be/internal/pkg/response"
 	"imd-seat-be/internal/svc"
 	"imd-seat-be/internal/types"
 
@@ -26,38 +29,36 @@ func NewReserveSeatLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Reser
 }
 
 func (l *ReserveSeatLogic) ReserveSeat(req *types.ReserveSeatReq) (resp *types.ReserveSeatRes, err error) {
-	resp=&types.ReserveSeatRes{}
 	student_id, ok := l.ctx.Value("student_id").(string)
-	if !ok{
-		resp.Base.Code=401
-		resp.Base.Message="解析学号失败"
-		return
+	if !ok {
+		return nil, errorx.WrapError(errorx.JWTError, errors.New("token读取学号失败"))
 	}
-	format:="2006-01-02"
-	t,err:=time.Parse(format,req.Date)
-	ReservationInfro :=model.Reservation{
+	format := "2006-01-02"
+	t, err := time.Parse(format, req.Date)
+
+	ReservationInfro := model.Reservation{
 		StudentId: student_id,
-		Type: req.Type,
-		Date:t,
-		Room:req.Room,
-		Seat: req.SeatID,
-		Status: types.BookedStatus,
+		Type:      req.Type,
+		Date:      t,
+		Room:      req.Room,
+		Seat:      req.SeatID,
+		Status:    types.BookedStatus,
 	}
-	re,err:=l.svcCtx.ReservationModel.Insert(l.ctx,&ReservationInfro)
-	if err!=nil{
-		resp.Base.Code=500
-		resp.Base.Message="预约失败"
-		return
+
+	re, err := l.svcCtx.ReservationModel.Insert(l.ctx, &ReservationInfro)
+	if err != nil {
+		return nil, errorx.WrapError(errorx.CreateErr, err)
 	}
-	id,_:=re.LastInsertId()
-	resp.Base.Code=200
-	resp.Base.Message="预约成功"
-	resp.Data=types.ReservationData{
-		RoomID:req.Room,
-		Seat: req.SeatID,
-		Date:req.Date,
-		Type: req.Type,
-		ReservationID: int(id),
+	id, _ := re.LastInsertId()
+	resp = &types.ReserveSeatRes{
+		Base: response.Success(),
+		Data: types.ReservationData{
+			RoomID:        req.Room,
+			Seat:          req.SeatID,
+			Date:          req.Date,
+			Type:          req.Type,
+			ReservationID: int(id),
+		},
 	}
-	return
+	return resp, nil
 }
