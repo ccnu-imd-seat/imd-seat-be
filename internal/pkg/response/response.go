@@ -31,6 +31,6 @@ func ErrHandler(err error) (int, any) {
 	case *errorx.Error:
 		return http.StatusOK, Fail(e)
 	default:
-		return http.StatusInternalServerError, nil
+		return http.StatusOK, Fail(errorx.WrapError(errorx.DefaultErr, err))
 	}
 }

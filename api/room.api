@@ -1,17 +1,17 @@
 syntax = "v1"
 
 type (
-  RoomList {
-    Rooms []string `json:"rooms"`
-  }
-
-  RoomListRes {
-    Base
-    Data    RoomList `json:"data"`
-  }
+	RoomList {
+		Rooms []string `json:"rooms"`
+	}
+	RoomListRes {
+		Base
+		Data RoomList `json:"data"`
+	}
 )
 
 service seat-api {
-  @handler getRooms
-  get /reservation/rooms returns (RoomListRes)
+	@handler getRooms
+	get /reservation/rooms returns (RoomListRes)
 }
+

@@ -1,26 +1,32 @@
 syntax = "v1"
 
 type (
-  ReservationDetails {
-    ID     int    `json:"id"`
-    Type   string `json:"type"`
-    Date   string `json:"date"`
-    Room   string `json:"room"`
-    SeatID int    `json:"seat_id"`
-    Status string `json:"status"`
-  }
-
-  MyReservationRes {
-    Base
-    Data    ReservationDetails `json:"data"`
-  }
-
+	ReservationDetails {
+		ID     int    `json:"id"`
+		Type   string `json:"type"`
+		Date   string `json:"date"`
+		Room   string `json:"room"`
+		SeatID string `json:"seat_id"`
+		Status string `json:"status"`
+	}
+	MyReservationRes {
+		Base
+		Data []ReservationDetails `json:"data"`
+	}
+	ScoreData {
+		Score int `json:"score"`
+	}
+	MyScoreRes{
+		Base
+		Data ScoreData `json:"data"`
+	}
 )
 
 service seat-api {
-  @handler getMyReservation
-  get /mine/reservations returns (MyReservationRes)
+	@handler getMyReservation
+	get /mine/reservations returns (MyReservationRes)
 
-  @handler getViolation
-  get /mine/violations returns (GeneralRes)
+	@handler getScore
+	get /mine/score returns (MyScoreRes)
 }
+

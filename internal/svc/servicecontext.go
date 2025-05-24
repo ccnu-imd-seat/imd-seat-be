@@ -8,27 +8,30 @@ import (
 	"imd-seat-be/internal/model"
 	"imd-seat-be/internal/pkg/ijwt"
 
-	"github.com/zeromicro/go-zero/core/stores/cache"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
 
 type ServiceContext struct {
 	Config           config.Config
-	JWTHandler       *ijwt.JWTHandler
+	JWTHandler       ijwt.JWTHandler
 	AuthMiddleware   func(handlerFunc http.HandlerFunc) http.HandlerFunc
 	SeatModel        model.SeatModel
 	ReservationModel model.ReservationModel
+	UserModel        model.UserModel
 	RoomModel        model.RoomModel
 }
 
-// 待修
 func NewServiceContext(c config.Config, conn sqlx.SqlConn) *ServiceContext {
+	JWTHandler := ijwt.NewJWTHandler(c.Auth.AccessSecret)
+	AuthMiddleware := middleware.NewAuthMiddleware(c, JWTHandler).AuthHandle
+
 	return &ServiceContext{
 		Config:           c,
-		JWTHandler:       ijwt.NewJWTHandler(c.Auth.AccessSecret),
+		JWTHandler:       JWTHandler,
 		SeatModel:        model.NewSeatModel(conn),
 		ReservationModel: model.NewReservationModel(conn),
-		AuthMiddleware:   middleware.NewAuthMiddleware(c).AuthHandle,
-		RoomModel:        model.NewRoomModel(conn, cache.ClusterConf{}),
+		AuthMiddleware:   AuthMiddleware,
+		UserModel:        model.NewUserModel(conn),
+		RoomModel:        model.NewRoomModel(conn),
 	}
 }

@@ -16,6 +16,8 @@ type (
 	ReservationModel interface {
 		UpdateReservstionMessage(ctx context.Context, id int64, status string) error
 		GetReservationByStatus(ctx context.Context, date time.Time, status string) ([]*Reservation, error)
+		GetReservationByStudentId(ctx context.Context, studentId string) ([]*Reservation, error)
+
 		reservationModel
 		withSession(session sqlx.Session) ReservationModel
 	}
@@ -34,9 +36,20 @@ func (c *customReservationModel) UpdateReservstionMessage(ctx context.Context, i
 
 // 根据状态查找
 func (c *customReservationModel) GetReservationByStatus(ctx context.Context, date time.Time, status string) ([]*Reservation, error) {
-	query := fmt.Sprintf("select %s from %s where `status` = ? and `date` = ?", seatRows, c.table)
+	query := fmt.Sprintf("select %s from %s where `status` = ? and `date` = ?", reservationRows, c.table)
 	var reservations []*Reservation
-	err := c.conn.QueryRowCtx(ctx, &reservations, query, status, date)
+	err := c.conn.QueryRowsCtx(ctx, &reservations, query, status, date)
+	if err != nil {
+		return nil, err
+	}
+	return reservations, nil
+}
+
+// 根据学号查找
+func (c *customReservationModel) GetReservationByStudentId(ctx context.Context, studentId string) ([]*Reservation, error) {
+	query := fmt.Sprintf("SELECT %s FROM %s WHERE `student_id` = ?", reservationRows, c.table)
+	var reservations []*Reservation
+	err := c.conn.QueryRowsCtx(ctx, &reservations, query, studentId)
 	if err != nil {
 		return nil, err
 	}

@@ -14,7 +14,7 @@ type (
 	// RoomModel is an interface to be customized, add more methods here,
 	// and implement the added methods in customRoomModel.
 	RoomModel interface {
-		GetAvailableRoom(ctx context.Context,status string)([]*Room,error)
+		GetAvailableRoom(ctx context.Context, status string) ([]*Room, error)
 		roomModel
 	}
 
@@ -24,10 +24,10 @@ type (
 )
 
 // 获取可预约的房间
-func (c *customRoomModel) GetAvailableRoom(ctx context.Context,status string)([]*Room,error){
+func (c *customRoomModel) GetAvailableRoom(ctx context.Context, status string) ([]*Room, error) {
 	query := fmt.Sprintf("select %s from %s where `status` = ?  ", seatRows, c.table)
 	var rooms []*Room
-	err := c.QueryRowsNoCacheCtx(ctx, &rooms, query, status)
+	err := c.conn.QueryRows(ctx, query, status)
 	if err != nil {
 		return nil, err
 	}
@@ -35,8 +35,8 @@ func (c *customRoomModel) GetAvailableRoom(ctx context.Context,status string)([]
 }
 
 // NewRoomModel returns a model for the database table.
-func NewRoomModel(conn sqlx.SqlConn, c cache.CacheConf, opts ...cache.Option) RoomModel {
+func NewRoomModel(conn sqlx.SqlConn, opts ...cache.Option) RoomModel {
 	return &customRoomModel{
-		defaultRoomModel: newRoomModel(conn, c, opts...),
+		defaultRoomModel: newRoomModel(conn),
 	}
 }
