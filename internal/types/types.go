@@ -30,7 +30,13 @@ type EmptyData struct {
 }
 
 type FeedbackReq struct {
-	Content string `json:"content"`
+	StudentID string `json:"studentid"`
+	Content   string `json:"content"`
+}
+
+type FeedbackRes struct {
+	Base Base
+	Data []FeedbackReq `json:"feedback"`
 }
 
 type GeneralRes struct {

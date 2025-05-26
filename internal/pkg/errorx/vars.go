@@ -18,6 +18,13 @@ var (
 var (
 	FetchErr  = NewError(3001, "数据库查询失败")
 	CreateErr = NewError(3002, "数据库创建失败")
+	UpdateErr = NewError(3003, "数据库更新失败")
+)
+
+// 签到模块错误（4000-4999）
+var (
+	AlreadyErr  = NewError(4001, "已经签到过了")
+	NonCheckErr = NewError(4002, "您还未签到")
 )
 
 var DefaultErr = NewError(5000, "非预设错误")

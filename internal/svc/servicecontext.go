@@ -19,6 +19,7 @@ type ServiceContext struct {
 	ReservationModel model.ReservationModel
 	UserModel        model.UserModel
 	RoomModel        model.RoomModel
+	FeedbackModel    model.FeedbackModel
 }
 
 func NewServiceContext(c config.Config, conn sqlx.SqlConn) *ServiceContext {
@@ -33,5 +34,6 @@ func NewServiceContext(c config.Config, conn sqlx.SqlConn) *ServiceContext {
 		AuthMiddleware:   AuthMiddleware,
 		UserModel:        model.NewUserModel(conn),
 		RoomModel:        model.NewRoomModel(conn),
+		FeedbackModel:    model.NewFeedbackModel(conn),
 	}
 }

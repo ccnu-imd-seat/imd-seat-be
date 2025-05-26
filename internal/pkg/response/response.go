@@ -34,3 +34,9 @@ func ErrHandler(err error) (int, any) {
 		return http.StatusOK, Fail(errorx.WrapError(errorx.DefaultErr, err))
 	}
 }
+
+func GeneralRes() *types.GeneralRes {
+	return &types.GeneralRes{
+		Base: Success(),
+	}
+}
