@@ -2,12 +2,19 @@ syntax = "v1"
 
 type (
 	FeedbackReq {
+		StudentID string `json:"studentid"`
 		Content string `json:"content"`
+	}
+	FeedbackRes {
+		Base Base  
+		Data []FeedbackReq `json:"feedback"`
 	}
 )
 
 service seat-api {
 	@handler submitFeedback
 	post /feedback (FeedbackReq) returns (GeneralRes)
+	@handler getFeedback
+	get /feedback (FeedbackReq) returns (FeedbackRes)
 }
 
