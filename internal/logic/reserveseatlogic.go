@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"imd-seat-be/internal/model"
+	"imd-seat-be/internal/pkg/contextx"
 	"imd-seat-be/internal/pkg/errorx"
 	"imd-seat-be/internal/pkg/response"
 	"imd-seat-be/internal/svc"
@@ -29,24 +30,24 @@ func NewReserveSeatLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Reser
 }
 
 func (l *ReserveSeatLogic) ReserveSeat(req *types.ReserveSeatReq) (resp *types.ReserveSeatRes, err error) {
-	student_id, ok := l.ctx.Value("student_id").(string)
+	studentID, ok := contextx.GetStudentID(l.ctx)
 	if !ok {
 		return nil, errorx.WrapError(errorx.JWTError, errors.New("token读取学号失败"))
 	}
-	
+
 	//检验信誉分
-	ok,err=CheckScore(l.ctx,l.svcCtx,student_id)
-	if err!=nil{
-		return nil,errorx.WrapError(errorx.FetchErr,err)
-	}else if !ok{
-		return nil,errorx.WrapError(errorx.ViolateErr,err)
+	ok, err = CheckScore(l.ctx, l.svcCtx, studentID)
+	if err != nil {
+		return nil, errorx.WrapError(errorx.FetchErr, err)
+	} else if !ok {
+		return nil, errorx.WrapError(errorx.ViolateErr, err)
 	}
 
 	format := "2006-01-02"
 	t, err := time.Parse(format, req.Date)
 
 	ReservationInfro := model.Reservation{
-		StudentId: student_id,
+		StudentId: studentID,
 		Type:      req.Type,
 		Date:      t,
 		Room:      req.Room,
@@ -77,7 +78,7 @@ func CheckScore(ctx context.Context, svcCtx *svc.ServiceContext, StudentID strin
 	//查询信誉分
 	score, err := svcCtx.UserModel.FindScoreByID(ctx, StudentID)
 	if err != nil {
-		return false,err
+		return false, err
 	}
 	if score > 0 {
 		return true, nil

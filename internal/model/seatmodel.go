@@ -27,9 +27,9 @@ type (
 
 // 获取某天某座位的具体信息
 func (c *customSeatModel) GetSeatInfobyDateAndID(ctx context.Context, date time.Time, roomid string) ([]*Seat, error) {
-	query := fmt.Sprintf("select %s from %s where `date` = ? and `seat` = ? ", seatRows, c.table)
+	query := fmt.Sprintf("select %s from %s where `date` = ? and `room` = ? ", seatRows, c.table)
 	var seats []*Seat
-	err := c.conn.QueryRowCtx(ctx, &seats, query, date, roomid)
+	err := c.conn.QueryRowsCtx(ctx, &seats, query, date, roomid)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func (c *customSeatModel) GetSeatInfobyDateAndID(ctx context.Context, date time.
 // 改变座位状态
 func (c *customSeatModel) ChangeSeatStatus(ctx context.Context, date time.Time, status, seat string) error {
 	query := fmt.Sprintf("update %s set `status` = ? where `seat` = ? and `date` = ?", c.table)
-	err := c.conn.QueryRowCtx(ctx, query, status, seat, date)
+	_,err := c.conn.ExecCtx(ctx, query, status, seat, date)
 	return err
 }
 
