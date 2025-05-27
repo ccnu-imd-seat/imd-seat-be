@@ -5,6 +5,8 @@ import (
 
 	"imd-seat-be/internal/svc"
 	"imd-seat-be/internal/types"
+	"imd-seat-be/internal/pkg/errorx"
+	"imd-seat-be/internal/pkg/response"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -24,21 +26,19 @@ func NewGetRoomsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetRooms
 }
 
 func (l *GetRoomsLogic) GetRooms() (resp *types.RoomListRes, err error) {
-	resp=&types.RoomListRes{}
 	Rooms,err:=l.svcCtx.RoomModel.GetAvailableRoom(l.ctx,types.AvaliableStatus)
 	if err!=nil{
-		resp.Base.Code=500
-		resp.Base.Message="获取可预约房间失败"
-		return
+		return nil,errorx.WrapError(errorx.FetchErr,err)
 	}
 	var roominfro []string
 	for _,room:=range Rooms{
 		roominfro=append(roominfro,room.Room)
 	}
-	resp.Base.Code=200
-	resp.Base.Message="获取可预约房间成功"
-	resp.Data=types.RoomList{
-		Rooms: roominfro,
+	resp=&types.RoomListRes{
+		Base:response.Success(),
+		Data: types.RoomList{
+			Rooms: roominfro,
+		},
 	}
 	return
 }
