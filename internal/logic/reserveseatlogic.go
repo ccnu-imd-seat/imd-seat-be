@@ -34,6 +34,26 @@ func (l *ReserveSeatLogic) ReserveSeat(req *types.ReserveSeatReq) (resp *types.R
 	if !ok {
 		return nil, errorx.WrapError(errorx.JWTError, errors.New("token读取学号失败"))
 	}
+	format := "2006-01-02"
+	t, err := time.ParseInLocation(format, req.Date,time.Local)
+	if err != nil {
+		return nil, errorx.WrapError(errorx.DefaultErr, errors.New("解析时间失败"))
+	}
+
+	//检验预约时间是否符合规则
+	if !CheckRule(t, req.Type) {
+		return nil, errorx.WrapError(errorx.ViolateErr, errors.New("预约时间不符合规则"))
+	}
+
+	//检验座位是否可预约
+	seat, err := l.svcCtx.SeatModel.FindOneBySeatRoomDate(l.ctx, req.SeatID, req.Room, t)
+	if err != nil {
+		return nil, errorx.WrapError(errorx.FetchErr, err)
+	} else if seat == nil {
+		return nil, errorx.WrapError(errorx.ViolateErr, errors.New("座位不存在"))
+	} else if seat.Status != types.AvaliableStatus {
+		return nil, errorx.WrapError(errorx.ViolateErr, errors.New("座位已被预约"))
+	}
 
 	//检验信誉分
 	ok, err = CheckScore(l.ctx, l.svcCtx, studentID)
@@ -42,9 +62,6 @@ func (l *ReserveSeatLogic) ReserveSeat(req *types.ReserveSeatReq) (resp *types.R
 	} else if !ok {
 		return nil, errorx.WrapError(errorx.ViolateErr, err)
 	}
-
-	format := "2006-01-02"
-	t, err := time.Parse(format, req.Date)
 
 	ReservationInfro := model.Reservation{
 		StudentId: studentID,
@@ -59,6 +76,13 @@ func (l *ReserveSeatLogic) ReserveSeat(req *types.ReserveSeatReq) (resp *types.R
 	if err != nil {
 		return nil, errorx.WrapError(errorx.CreateErr, err)
 	}
+
+	//更新座位状态为已预约
+	err = l.svcCtx.SeatModel.ChangeSeatStatus(l.ctx, t, types.BookedStatus, req.SeatID)
+	if err != nil {
+		return nil, errorx.WrapError(errorx.UpdateErr, err)
+	}
+
 	id, _ := re.LastInsertId()
 	resp = &types.ReserveSeatRes{
 		Base: response.Success(),
@@ -84,4 +108,27 @@ func CheckScore(ctx context.Context, svcCtx *svc.ServiceContext, StudentID strin
 		return true, nil
 	}
 	return false, nil
+}
+
+// 检验预约时间是否符合规则
+func CheckRule(date time.Time, types string) bool {
+	now := time.Now()
+	weekday := int(now.Weekday())
+	if types == "day"  {
+		daysUntilSunday := (7-weekday)%7
+		sunday := now.AddDate(0, 0, daysUntilSunday)
+		if date.Before(sunday)||InTimeRange(now, 18, 21) {
+			return true
+		}
+	} else if types == "week" {
+		if weekday == 0 && InTimeRange(now, 9, 18) {
+			return true
+		}
+	}
+	return false
+}
+
+func InTimeRange(t time.Time, startHour, EndHour int) bool {
+	hour := t.Hour()
+	return hour >= startHour && hour <= EndHour
 }

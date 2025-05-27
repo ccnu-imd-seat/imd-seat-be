@@ -2,11 +2,9 @@ package logic
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
-	"imd-seat-be/internal/pkg/errorx"
 	"imd-seat-be/internal/pkg/response"
 	"imd-seat-be/internal/svc"
 	"imd-seat-be/internal/types"
@@ -30,19 +28,7 @@ func NewGetAvailableDaysLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 
 func (l *GetAvailableDaysLogic) GetAvailableDays(Type string) (resp *types.AvailableDatesRes, err error) {
 	//获取当前时间
-	now := time.Now()
-	if Type == "week" {
-		if now.Weekday() != time.Sunday || !InTimeRange(now, 9, 18) {
-			return nil, errorx.WrapError(errorx.ViolateErr, errors.New("不在可预约时间内"))
-		}
-		now = now.AddDate(0, 0, 1)
-	} else if Type == "day" {
-		if !InTimeRange(now, 18, 21) {
-			return nil, errorx.WrapError(errorx.ViolateErr, errors.New("不在可预约时间内"))
-		}
-	} else {
-		return nil, errorx.WrapError(errorx.DefaultErr, errors.New("输入无效"))
-	}
+	now := time.Now().Local()
 	resp = &types.AvailableDatesRes{
 		Base: response.Success(),
 		Data: GetThisWeekDays(now, Type),
@@ -71,17 +57,13 @@ func GetThisWeekDays(t time.Time, Type string) types.AvailableDates {
 		}
 	} else {
 		date.Type = "week"
-		datestr := fmt.Sprintf("%s——%s", t.Format("2006-01-02"), t.AddDate(0, 0, DayRemaining-1).Format("2006-01-02"))
+		monday := t.AddDate(0, 0, -int(weekday)+1)
+		sunday := monday.AddDate(0, 0, 6)
+		datestr := fmt.Sprintf("%s——%s", monday.Format("2006-01-02"),sunday.Format("2006-01-02"))
 		date.Date = datestr
 		dates = append(dates, date)
 	}
 	return types.AvailableDates{
 		Dates: dates,
 	}
-}
-
-// 判断时间是否在预约范围
-func InTimeRange(t time.Time, startHour, EndHour int) bool {
-	hour := t.Hour()
-	return hour >= startHour && hour <= EndHour
 }
