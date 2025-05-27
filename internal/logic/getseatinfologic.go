@@ -29,12 +29,14 @@ func NewGetSeatInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetSe
 
 func (l *GetSeatInfoLogic) GetSeatInfo(date, room string) (resp *types.SeatListRes, err error) {
 	format := "2006-01-02"
-	t, err := time.Parse(format, date)
+	t, err := time.ParseInLocation(format, date,time.Local)
 	if err != nil {
 		return nil, errorx.WrapError(errorx.DefaultErr, errors.New("解析时间失败"))
 	}
+
+	//获取座位信息
 	seatinfro, err := l.svcCtx.SeatModel.GetSeatInfobyDateAndID(l.ctx, t, room)
-	if err != nil {
+	if err != nil || len(seatinfro) == 0 {
 		return nil, errorx.WrapError(errorx.FetchErr, err)
 	}
 	var SeatInfro []types.SeatInfo

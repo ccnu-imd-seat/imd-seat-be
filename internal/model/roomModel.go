@@ -25,9 +25,9 @@ type (
 
 // 获取可预约的房间
 func (c *customRoomModel) GetAvailableRoom(ctx context.Context, status string) ([]*Room, error) {
-	query := fmt.Sprintf("select %s from %s where `status` = ?  ", seatRows, c.table)
+	query := fmt.Sprintf("select %s from %s where `status` = ?  ", roomRows, c.table)
 	var rooms []*Room
-	err := c.conn.QueryRows(ctx, query, status)
+	err := c.conn.QueryRowsCtx(ctx,&rooms, query, status)
 	if err != nil {
 		return nil, err
 	}
