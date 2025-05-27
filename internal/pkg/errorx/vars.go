@@ -18,6 +18,12 @@ var (
 var (
 	FetchErr  = NewError(3001, "数据库查询失败")
 	CreateErr = NewError(3002, "数据库创建失败")
+	DeleteErr = NewError(3003, "数据库删除失败")
+	UpdateErr = NewError(3004, "数据库更新失败")
 )
 
+// 预约模块失败(4000-4999)
+var (
+	ViolateErr = NewError(4001, "预约请求不合规")
+)
 var DefaultErr = NewError(5000, "非预设错误")
