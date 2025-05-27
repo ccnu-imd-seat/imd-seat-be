@@ -32,4 +32,5 @@ var (
 var (
 	ViolateErr = NewError(4001, "预约请求不合规")
 )
+
 var DefaultErr = NewError(5000, "非预设错误")
