@@ -54,10 +54,10 @@ func (l *CancelReservationLogic) CancelReservation(req *types.CancelReservationR
 		return nil,errorx.WrapError(errorx.ViolateErr,errors.New("取消请求不合规"))
 	}
 
-	//删除预约记录
-	err = l.svcCtx.ReservationModel.Delete(l.ctx, ID)
+	//更改预约状态
+	err = l.svcCtx.ReservationModel.UpdateReservstionMessage(l.ctx, ID,types.CanceldStatus)
 	if err != nil{
-		return nil,errorx.WrapError(errorx.DeleteErr,err)
+		return nil,errorx.WrapError(errorx.UpdateErr,err)
 	}
 
 	//释放座位，改状态为可预约
