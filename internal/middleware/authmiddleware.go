@@ -8,6 +8,7 @@ import (
 	"imd-seat-be/internal/config"
 	"imd-seat-be/internal/pkg/contextx"
 	"imd-seat-be/internal/pkg/ijwt"
+	"imd-seat-be/internal/pkg/response"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest/httpx"
@@ -27,16 +28,23 @@ func (m *AuthMiddleware) AuthHandle(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		AuthHeader := r.Header.Get("Authorization")
 		if AuthHeader == "" || !strings.HasPrefix(AuthHeader, "Bearer ") {
-			httpx.ErrorCtx(r.Context(), w, fmt.Errorf("invalid authoriztion"))
+			err := fmt.Errorf("invalid authorization")
+			code, body := response.ErrHandler(err)
+			w.WriteHeader(code)
+			httpx.WriteJsonCtx(r.Context(), w, http.StatusOK, body)
 			return
 		}
+
 		token := strings.TrimPrefix(AuthHeader, "Bearer ")
 		claims, err := m.r.ParseToken(token)
 		if err != nil {
-			logx.Errorf("解析token失败:%v", err)
-			httpx.ErrorCtx(r.Context(), w, err)
+			logx.Errorf("解析token失败: %v", err)
+			code, body := response.ErrHandler(err)
+			w.WriteHeader(code)
+			httpx.WriteJsonCtx(r.Context(), w, http.StatusOK, body)
 			return
 		}
+
 		// 将学号信息写入context
 		ctx := contextx.SetStudentID(r.Context(), claims.StudentId)
 		r = r.WithContext(ctx)
