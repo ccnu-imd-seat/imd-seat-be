@@ -1,5 +1,10 @@
 syntax = "v1"
 
+@server (
+	prefix: "/api/v1"
+	jwt:    Auth
+)
+
 service seat-api {
 	@handler checkIn
 	get /checkin returns (GeneralRes)

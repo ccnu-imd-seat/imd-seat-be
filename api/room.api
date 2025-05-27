@@ -10,6 +10,11 @@ type (
 	}
 )
 
+@server (
+	prefix: "/api/v1"
+	jwt:    Auth
+)
+
 service seat-api {
 	@handler getRooms
 	get /reservation/rooms returns (RoomListRes)

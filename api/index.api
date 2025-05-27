@@ -10,9 +10,5 @@ import (
 	"general.api"
 )
 
-@server (
-	prefix: "/api/v1"
-	jwt:    Auth
-)
-service seat-api {}
-
+// api 不会自动继承 prefix / jwt 等配置
+// @server 必须紧跟 service
