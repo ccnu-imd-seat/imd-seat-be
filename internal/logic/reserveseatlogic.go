@@ -117,7 +117,7 @@ func CheckRule(date time.Time, types string) bool {
 	if types == "day"  {
 		daysUntilSunday := (7-weekday)%7
 		sunday := now.AddDate(0, 0, daysUntilSunday)
-		if date.Before(sunday)||InTimeRange(now, 18, 21) {
+		if date.Before(sunday)&&InTimeRange(now, 18, 21) {
 			return true
 		}
 	} else if types == "week" {

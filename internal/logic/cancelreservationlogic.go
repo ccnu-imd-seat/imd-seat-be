@@ -45,8 +45,8 @@ func (l *CancelReservationLogic) CancelReservation(req *types.CancelReservationR
 	ReservationInfro, err := l.svcCtx.ReservationModel.FindOne(l.ctx, ID)
 	if err != nil {
 		return nil,errorx.WrapError(errorx.FetchErr,err)
-	}else if ReservationInfro.StudentId!=studentID{
-		return nil,errorx.WrapError(errorx.ViolateErr,errors.New("该预约不属于当前用户"))
+	}else if ReservationInfro.StudentId!=studentID||ReservationInfro.Status!=types.BookedStatus{
+		return nil,errorx.WrapError(errorx.ViolateErr,errors.New("该预约不属于当前用户或状态不符合取消要求"))
 	}
 
 	//检验是否合规
