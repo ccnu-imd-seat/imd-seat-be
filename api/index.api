@@ -12,3 +12,4 @@ import (
 
 // api 不会自动继承 prefix / jwt 等配置
 // @server 必须紧跟 service
+// 自带jwt中间件不好用
