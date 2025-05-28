@@ -1,14 +1,14 @@
 package middleware
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
 	"strings"
 
 	"imd-seat-be/internal/config"
 	"imd-seat-be/internal/pkg/contextx"
+	"imd-seat-be/internal/pkg/errorx"
 	"imd-seat-be/internal/pkg/ijwt"
-	"imd-seat-be/internal/pkg/response"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest/httpx"
@@ -28,23 +28,16 @@ func (m *AuthMiddleware) AuthHandle(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		AuthHeader := r.Header.Get("Authorization")
 		if AuthHeader == "" || !strings.HasPrefix(AuthHeader, "Bearer ") {
-			err := fmt.Errorf("invalid authorization")
-			code, body := response.ErrHandler(err)
-			w.WriteHeader(code)
-			httpx.WriteJsonCtx(r.Context(), w, http.StatusOK, body)
+			httpx.ErrorCtx(r.Context(), w, errorx.WrapError(errorx.JWTError, errors.New("invalid authoriztion")))
 			return
 		}
-
 		token := strings.TrimPrefix(AuthHeader, "Bearer ")
 		claims, err := m.r.ParseToken(token)
 		if err != nil {
-			logx.Errorf("解析token失败: %v", err)
-			code, body := response.ErrHandler(err)
-			w.WriteHeader(code)
-			httpx.WriteJsonCtx(r.Context(), w, http.StatusOK, body)
+			logx.Errorf("解析token失败:%v", err)
+			httpx.ErrorCtx(r.Context(), w, errorx.WrapError(errorx.JWTError, err))
 			return
 		}
-
 		// 将学号信息写入context
 		ctx := contextx.SetStudentID(r.Context(), claims.StudentId)
 		r = r.WithContext(ctx)
