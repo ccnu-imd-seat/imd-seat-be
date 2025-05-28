@@ -2,12 +2,15 @@ syntax = "v1"
 
 type (
 	FeedbackReq {
-		StudentID string `json:"studentid"`
 		Content string `json:"content"`
 	}
 	FeedbackRes {
 		Base Base  
-		Data []FeedbackReq `json:"feedback"`
+		Data []Feedback `json:"feedback"`
+	}
+	Feedback {
+		Content string `json:"content"`
+		StudentId string `json:"student_id"`
 	}
 )
 

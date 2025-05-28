@@ -31,12 +31,12 @@ func (l *GetFeedbackLogic) GetFeedback(req *types.FeedbackReq) (resp *types.Feed
 		return nil, errorx.WrapError(errorx.FetchErr, err)
 	}
 
-	var data []types.FeedbackReq
+	var data []types.Feedback
 
 	// 结构体的转换
 	for _, res := range reservations {
-		data = append(data, types.FeedbackReq{
-			StudentID: res.StudentId,
+		data = append(data, types.Feedback{
+			StudentId: res.StudentId,
 			Content:   res.Content,
 		})
 	}

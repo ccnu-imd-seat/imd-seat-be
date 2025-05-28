@@ -29,14 +29,18 @@ type DateInfo struct {
 type EmptyData struct {
 }
 
-type FeedbackReq struct {
-	StudentID string `json:"studentid"`
+type Feedback struct {
 	Content   string `json:"content"`
+	StudentId string `json:"student_id"`
+}
+
+type FeedbackReq struct {
+	Content string `json:"content"`
 }
 
 type FeedbackRes struct {
 	Base Base
-	Data []FeedbackReq `json:"feedback"`
+	Data []Feedback `json:"feedback"`
 }
 
 type GeneralRes struct {
