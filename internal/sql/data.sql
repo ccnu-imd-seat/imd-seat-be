@@ -31,3 +31,10 @@ CREATE TABLE `user` (
   `score` INT NOT NULL DEFAULT 300 COMMENT '信誉分',
   PRIMARY KEY (`student_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `feedback` (
+  `id` INT NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `student_id` CHAR(15) NOT NULL COMMENT '学号',
+  `content` VARCHAR(100) NOT NULL COMMENT '反馈内容最多一百字',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

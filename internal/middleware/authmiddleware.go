@@ -1,12 +1,13 @@
 package middleware
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
 	"strings"
 
 	"imd-seat-be/internal/config"
 	"imd-seat-be/internal/pkg/contextx"
+	"imd-seat-be/internal/pkg/errorx"
 	"imd-seat-be/internal/pkg/ijwt"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -27,14 +28,14 @@ func (m *AuthMiddleware) AuthHandle(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		AuthHeader := r.Header.Get("Authorization")
 		if AuthHeader == "" || !strings.HasPrefix(AuthHeader, "Bearer ") {
-			httpx.ErrorCtx(r.Context(), w, fmt.Errorf("invalid authoriztion"))
+			httpx.ErrorCtx(r.Context(), w, errorx.WrapError(errorx.JWTError, errors.New("invalid authoriztion")))
 			return
 		}
 		token := strings.TrimPrefix(AuthHeader, "Bearer ")
 		claims, err := m.r.ParseToken(token)
 		if err != nil {
 			logx.Errorf("解析token失败:%v", err)
-			httpx.ErrorCtx(r.Context(), w, err)
+			httpx.ErrorCtx(r.Context(), w, errorx.WrapError(errorx.JWTError, err))
 			return
 		}
 		// 将学号信息写入context

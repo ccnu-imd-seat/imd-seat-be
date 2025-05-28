@@ -2,7 +2,12 @@ package logic
 
 import (
 	"context"
+	"errors"
 
+	"imd-seat-be/internal/model"
+	"imd-seat-be/internal/pkg/contextx"
+	"imd-seat-be/internal/pkg/errorx"
+	"imd-seat-be/internal/pkg/response"
 	"imd-seat-be/internal/svc"
 	"imd-seat-be/internal/types"
 
@@ -24,7 +29,22 @@ func NewSubmitFeedbackLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Su
 }
 
 func (l *SubmitFeedbackLogic) SubmitFeedback(req *types.FeedbackReq) (resp *types.GeneralRes, err error) {
-	// todo: add your logic here and delete this line
+	studentID, ok := contextx.GetStudentID(l.ctx)
+	if !ok {
+		return nil, errorx.WrapError(errorx.JWTError, errors.New("token读取学号失败"))
+	}
 
-	return
+	Feedback := model.Feedback{
+		StudentId: studentID,
+		Content:   req.Content,
+	}
+
+	_, err = l.svcCtx.FeedbackModel.Insert(l.ctx, &Feedback)
+	if err != nil {
+		return nil, errorx.WrapError(errorx.CreateErr, err)
+	}
+
+	resp = response.GeneralRes()
+
+	return resp, nil
 }

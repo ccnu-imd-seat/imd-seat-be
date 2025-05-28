@@ -2,7 +2,11 @@ package logic
 
 import (
 	"context"
+	"errors"
 
+	"imd-seat-be/internal/pkg/contextx"
+	"imd-seat-be/internal/pkg/errorx"
+	"imd-seat-be/internal/pkg/response"
 	"imd-seat-be/internal/svc"
 	"imd-seat-be/internal/types"
 
@@ -24,7 +28,29 @@ func NewCheckInLogic(ctx context.Context, svcCtx *svc.ServiceContext) *CheckInLo
 }
 
 func (l *CheckInLogic) CheckIn() (resp *types.GeneralRes, err error) {
-	// todo: add your logic here and delete this line
+	studentID, ok := contextx.GetStudentID(l.ctx)
+	if !ok {
+		return nil, errorx.WrapError(errorx.JWTError, errors.New("token读取学号失败"))
+	}
 
-	return
+	reservation, err := l.svcCtx.ReservationModel.GetTodayReservationByStudentId(l.ctx, studentID)
+	if err != nil {
+		return nil, errorx.WrapError(errorx.FetchErr, err)
+	}
+
+	if reservation.Status == types.CheckedInStatus {
+		return nil, errorx.WrapError(errorx.AlreadyErr, errors.New("请勿重复签到"))
+	} else if reservation.Status == types.BookedStatus {
+		reservation.Status = types.CheckedInStatus
+		err := l.svcCtx.ReservationModel.Update(l.ctx, reservation)
+		if err != nil {
+			return nil, errorx.WrapError(errorx.UpdateErr, err)
+		}
+	} else {
+		return nil, errorx.WrapError(errorx.NonCheckErr, errors.New("请预约座位"))
+	}
+
+	resp = response.GeneralRes()
+
+	return resp, nil
 }

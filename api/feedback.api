@@ -4,10 +4,25 @@ type (
 	FeedbackReq {
 		Content string `json:"content"`
 	}
+	FeedbackRes {
+		Base Base  
+		Data []Feedback `json:"feedback"`
+	}
+	Feedback {
+		Content string `json:"content"`
+		StudentId string `json:"student_id"`
+	}
+)
+
+@server (
+	prefix: "/api/v1"
+	jwt:    Auth
 )
 
 service seat-api {
 	@handler submitFeedback
 	post /feedback (FeedbackReq) returns (GeneralRes)
+	@handler getFeedback
+	get /feedback returns (FeedbackRes)
 }
 
