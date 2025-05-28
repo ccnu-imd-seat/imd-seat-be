@@ -23,6 +23,6 @@ service seat-api {
 	@handler submitFeedback
 	post /feedback (FeedbackReq) returns (GeneralRes)
 	@handler getFeedback
-	get /feedback (FeedbackReq) returns (FeedbackRes)
+	get /feedback returns (FeedbackRes)
 }
 

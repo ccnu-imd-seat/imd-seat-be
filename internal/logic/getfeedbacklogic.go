@@ -25,7 +25,7 @@ func NewGetFeedbackLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetFe
 	}
 }
 
-func (l *GetFeedbackLogic) GetFeedback(req *types.FeedbackReq) (resp *types.FeedbackRes, err error) {
+func (l *GetFeedbackLogic) GetFeedback() (resp *types.FeedbackRes, err error) {
 	reservations, err := l.svcCtx.FeedbackModel.FindAll(l.ctx)
 	if err != nil {
 		return nil, errorx.WrapError(errorx.FetchErr, err)
