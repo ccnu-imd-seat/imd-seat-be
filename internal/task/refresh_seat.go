@@ -37,6 +37,17 @@ func RegisterTasks(ctx context.Context, svcCtx *svc.ServiceContext) {
 	if err != nil {
 		log.Println("注册定时更新信誉分失败:", err)
 	}
+	// 每天 0:05:00 清理过期座位信息
+	_, err = c.AddFunc("0 5 0 * * *", func() {
+		if err := CleanExpiredSeats(ctx, svcCtx); err != nil {
+			log.Println("清理过期座位信息失败:", err)
+		} else {
+			log.Println("清理过期座位信息成功")
+		}
+	})
+	if err != nil {
+		log.Println("注册定时清理座位信息失败:", err)
+	}
 	c.Start()
 
 	go func() {
@@ -95,5 +106,21 @@ func RenewScore(ctx context.Context, svcCtx *svc.ServiceContext) error {
 	if err != nil {
 		return errorx.WrapError(errorx.UpdateErr, err)
 	}
+	return nil
+}
+
+// 删除今天之前的座位信息
+func CleanExpiredSeats(ctx context.Context, svcCtx *svc.ServiceContext) error {
+	// 获取当前日期
+	today := time.Now().Format("2006-01-02")
+
+	// 调用模型层方法删除早于今天的座位信息
+	err := svcCtx.SeatModel.DeleteSeatsBeforeDate(ctx, today)
+	if err != nil {
+		log.Println("清理座位信息失败:", err)
+		return errorx.WrapError(errorx.DeleteErr, err)
+	}
+
+	log.Println("过期座位信息清理成功")
 	return nil
 }

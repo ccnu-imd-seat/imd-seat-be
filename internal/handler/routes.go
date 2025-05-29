@@ -71,6 +71,11 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			Path:    "/checkin",
 			Handler: checkInHandler(serverCtx),
 		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/upload",
+			Handler: UploadSeatCsvHandler(serverCtx),
+		},
 	}
 
 	server.AddRoutes(
