@@ -3,6 +3,8 @@ package logic
 import (
 	"context"
 
+	"imd-seat-be/internal/model"
+	"imd-seat-be/internal/pkg/errorx"
 	"imd-seat-be/internal/pkg/response"
 	"imd-seat-be/internal/svc"
 	"imd-seat-be/internal/types"
@@ -29,6 +31,15 @@ func (l *UploadSeatCsvLogic) UploadSeatCsv(req *types.UploadSeatRequest) (resp *
 		err := l.svcCtx.SeatModel.InsertSeatsForDateRange(l.ctx, room.Room, room.Seatid, req.StartTime, req.EndTime)
 		if err != nil {
 			return nil, err
+		}
+
+		_, err = l.svcCtx.RoomModel.Insert(l.ctx, &model.Room{
+			Room:   room.Room,
+			Status: types.AvaliableStatus,
+		})
+
+		if err != nil {
+			return nil, errorx.WrapError(errorx.CreateErr, err)
 		}
 	}
 
