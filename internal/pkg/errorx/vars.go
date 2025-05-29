@@ -22,15 +22,11 @@ var (
 	DeleteErr = NewError(3003, "数据库删除失败")
 )
 
-// 签到模块错误（4000-4999）
+// 预约模块失败 (4000-4999)
 var (
-	AlreadyErr  = NewError(4001, "已经签到过了")
-	NonCheckErr = NewError(4002, "您还未签到")
-)
-
-// 预约模块失败(4000-4999)
-var (
-	ViolateErr = NewError(4001, "预约请求不合规")
+	ViolateErr  = NewError(4001, "预约请求不合规")
+	AlreadyErr  = NewError(4002, "已经签到过了")
+	NonCheckErr = NewError(4003, "您还未签到")
 )
 
 var DefaultErr = NewError(5000, "非预设错误")

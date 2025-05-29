@@ -1,5 +1,9 @@
 syntax = "v1"
 
+type checkIn {
+	seatid string `form:"seat_id"`
+}
+
 @server (
 	prefix: "/api/v1"
 	jwt:    Auth
@@ -7,6 +11,6 @@ syntax = "v1"
 
 service seat-api {
 	@handler checkIn
-	get /checkin returns (GeneralRes)
+	get /checkin (checkIn) returns (GeneralRes)
 }
 

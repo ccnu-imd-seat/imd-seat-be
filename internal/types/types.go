@@ -130,3 +130,7 @@ type SeatListRes struct {
 	Base
 	Data SeatListData `json:"data"`
 }
+
+type CheckIn struct {
+	Seatid string `form:"seat_id"`
+}

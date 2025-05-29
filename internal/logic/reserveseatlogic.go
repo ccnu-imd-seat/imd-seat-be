@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"imd-seat-be/internal/model"
@@ -30,22 +31,26 @@ func NewReserveSeatLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Reser
 }
 
 func (l *ReserveSeatLogic) ReserveSeat(req *types.ReserveSeatReq) (resp *types.ReserveSeatRes, err error) {
+	debug := l.ctx.Value("DEBUG_MODE")
+	fmt.Println(debug)
 	studentID, ok := contextx.GetStudentID(l.ctx)
 	if !ok {
 		return nil, errorx.WrapError(errorx.JWTError, errors.New("token读取学号失败"))
 	}
 	format := "2006-01-02"
-	t, err := time.ParseInLocation(format, req.Date,time.Local)
+	t, err := time.ParseInLocation(format, req.Date, time.Local)
 	if err != nil {
 		return nil, errorx.WrapError(errorx.DefaultErr, errors.New("解析时间失败"))
 	}
 
-	//检验预约时间是否符合规则
-	if !CheckRule(t, req.Type) {
-		return nil, errorx.WrapError(errorx.ViolateErr, errors.New("预约时间不符合规则"))
+	// 检验预约时间是否符合规则
+	if debug != "1" {
+		if !CheckRule(t, req.Type) {
+			return nil, errorx.WrapError(errorx.ViolateErr, errors.New("预约时间不符合规则"))
+		}
 	}
 
-	//检验座位是否可预约
+	// 检验座位是否可预约
 	seat, err := l.svcCtx.SeatModel.FindOneBySeatRoomDate(l.ctx, req.SeatID, req.Room, t)
 	if err != nil {
 		return nil, errorx.WrapError(errorx.FetchErr, err)
@@ -55,7 +60,7 @@ func (l *ReserveSeatLogic) ReserveSeat(req *types.ReserveSeatReq) (resp *types.R
 		return nil, errorx.WrapError(errorx.ViolateErr, errors.New("座位已被预约"))
 	}
 
-	//检验信誉分
+	// 检验信誉分
 	ok, err = CheckScore(l.ctx, l.svcCtx, studentID)
 	if err != nil {
 		return nil, errorx.WrapError(errorx.FetchErr, err)
@@ -77,7 +82,7 @@ func (l *ReserveSeatLogic) ReserveSeat(req *types.ReserveSeatReq) (resp *types.R
 		return nil, errorx.WrapError(errorx.CreateErr, err)
 	}
 
-	//更新座位状态为已预约
+	// 更新座位状态为已预约
 	err = l.svcCtx.SeatModel.ChangeSeatStatus(l.ctx, t, types.BookedStatus, req.SeatID)
 	if err != nil {
 		return nil, errorx.WrapError(errorx.UpdateErr, err)
@@ -114,10 +119,10 @@ func CheckScore(ctx context.Context, svcCtx *svc.ServiceContext, StudentID strin
 func CheckRule(date time.Time, types string) bool {
 	now := time.Now()
 	weekday := int(now.Weekday())
-	if types == "day"  {
-		daysUntilSunday := (7-weekday)%7
+	if types == "day" {
+		daysUntilSunday := (7 - weekday) % 7
 		sunday := now.AddDate(0, 0, daysUntilSunday)
-		if date.Before(sunday)&&InTimeRange(now, 18, 21) {
+		if date.Before(sunday) && InTimeRange(now, 18, 21) {
 			return true
 		}
 	} else if types == "week" {
