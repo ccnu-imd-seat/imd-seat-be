@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"fmt"
+	"imd-seat-be/internal/types"
 	"time"
 
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
@@ -17,7 +18,7 @@ type (
 		UpdateReservstionMessage(ctx context.Context, id int64, status string) error
 		GetReservationByStatus(ctx context.Context, date time.Time, status string) ([]*Reservation, error)
 		GetReservationByStudentId(ctx context.Context, studentId string) ([]*Reservation, error)
-		GetTodayReservationByStudentId(ctx context.Context, studentId string) (*Reservation, error)
+		GetTodayReservationByStudentId(ctx context.Context, studentId string, seat string) (*Reservation, error)
 		GetReservationByDate(ctx context.Context, date time.Time) ([]*Reservation, error)
 
 		reservationModel
@@ -59,19 +60,20 @@ func (c *customReservationModel) GetReservationByStudentId(ctx context.Context, 
 }
 
 // 根据根据学号查找当天预约进行签到处理
-func (c *customReservationModel) GetTodayReservationByStudentId(ctx context.Context, studentId string) (*Reservation, error) {
-	query := fmt.Sprintf("SELECT %s FROM %s WHERE `student_id` = ? and `date` = ?`", reservationRows, c.table)
-	var reservation *Reservation
+func (c *customReservationModel) GetTodayReservationByStudentId(ctx context.Context, studentId string, seat string) (*Reservation, error) {
+	query := fmt.Sprintf("SELECT %s FROM %s WHERE `student_id` = ? and `date` = ? and `seat` = ? and `status` = ?", reservationRows, c.table)
+	var reservation Reservation
 	date := time.Now()
 	dateStr := date.Format(time.DateOnly)
-	err := c.conn.QueryRowsCtx(ctx, &reservation, query, studentId, dateStr)
+	status := types.BookedStatus
+	err := c.conn.QueryRowCtx(ctx, &reservation, query, studentId, dateStr, seat, status)
 	if err != nil {
 		return nil, err
 	}
-	return reservation, nil
+	return &reservation, nil
 }
 
-//根据日期查找
+// 根据日期查找
 func (c *customReservationModel) GetReservationByDate(ctx context.Context, date time.Time) ([]*Reservation, error) {
 	query := fmt.Sprintf("SELECT %s FROM %s WHERE `date` = ?", reservationRows, c.table)
 	var reservations []*Reservation
@@ -81,6 +83,7 @@ func (c *customReservationModel) GetReservationByDate(ctx context.Context, date 
 	}
 	return reservations, nil
 }
+
 // NewReservationModel returns a model for the database table.
 func NewReservationModel(conn sqlx.SqlConn) ReservationModel {
 	return &customReservationModel{

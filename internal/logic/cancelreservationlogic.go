@@ -2,9 +2,9 @@ package logic
 
 import (
 	"context"
+	"errors"
 	"strconv"
 	"time"
-	"errors"
 
 	"imd-seat-be/internal/model"
 	"imd-seat-be/internal/pkg/contextx"
@@ -38,15 +38,15 @@ func (l *CancelReservationLogic) CancelReservation(req *types.CancelReservationR
 
 	ID, err := strconv.ParseInt(req.ID, 10, 64)
 	if err != nil {
-		return nil,errorx.WrapError(errorx.DefaultErr,errors.New("ID转换失败"))
+		return nil, errorx.WrapError(errorx.DefaultErr, errors.New("ID转换失败"))
 	}
 
 	//获取预约信息
 	ReservationInfro, err := l.svcCtx.ReservationModel.FindOne(l.ctx, ID)
 	if err != nil {
-		return nil,errorx.WrapError(errorx.FetchErr,err)
-	}else if ReservationInfro.StudentId!=studentID||ReservationInfro.Status!=types.BookedStatus{
-		return nil,errorx.WrapError(errorx.ViolateErr,errors.New("该预约不属于当前用户或状态不符合取消要求"))
+		return nil, errorx.WrapError(errorx.FetchErr, err)
+	} else if ReservationInfro.StudentId != studentID || ReservationInfro.Status != types.BookedStatus {
+		return nil, errorx.WrapError(errorx.ViolateErr, errors.New("该预约不属于当前用户或状态不符合取消要求"))
 	}
 
 	//检验是否合规
@@ -55,20 +55,20 @@ func (l *CancelReservationLogic) CancelReservation(req *types.CancelReservationR
 	}
 
 	//更改预约状态
-	err = l.svcCtx.ReservationModel.UpdateReservstionMessage(l.ctx, ID,types.CanceldStatus)
-	if err != nil{
-		return nil,errorx.WrapError(errorx.UpdateErr,err)
+	err = l.svcCtx.ReservationModel.UpdateReservstionMessage(l.ctx, ID, types.CancelledStatus)
+	if err != nil {
+		return nil, errorx.WrapError(errorx.UpdateErr, err)
 	}
 
 	//释放座位，改状态为可预约
-	err=l.svcCtx.SeatModel.ChangeSeatStatus(l.ctx,ReservationInfro.Date,types.AvaliableStatus,ReservationInfro.Seat)
+	err = l.svcCtx.SeatModel.ChangeSeatStatus(l.ctx, ReservationInfro.Date, types.AvaliableStatus, ReservationInfro.Seat)
 	if err != nil {
-		return nil,errorx.WrapError(errorx.UpdateErr,err)
+		return nil, errorx.WrapError(errorx.UpdateErr, err)
 	}
-	resp=&types.GeneralRes{
+	resp = &types.GeneralRes{
 		Base: response.Success(),
 	}
-	return resp,nil
+	return resp, nil
 }
 
 // 检验取消时间是否符合规则

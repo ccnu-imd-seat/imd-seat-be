@@ -27,13 +27,13 @@ func NewCheckInLogic(ctx context.Context, svcCtx *svc.ServiceContext) *CheckInLo
 	}
 }
 
-func (l *CheckInLogic) CheckIn() (resp *types.GeneralRes, err error) {
+func (l *CheckInLogic) CheckIn(req *types.CheckIn) (resp *types.GeneralRes, err error) {
 	studentID, ok := contextx.GetStudentID(l.ctx)
 	if !ok {
 		return nil, errorx.WrapError(errorx.JWTError, errors.New("token读取学号失败"))
 	}
 
-	reservation, err := l.svcCtx.ReservationModel.GetTodayReservationByStudentId(l.ctx, studentID)
+	reservation, err := l.svcCtx.ReservationModel.GetTodayReservationByStudentId(l.ctx, studentID, req.Seatid)
 	if err != nil {
 		return nil, errorx.WrapError(errorx.FetchErr, err)
 	}
