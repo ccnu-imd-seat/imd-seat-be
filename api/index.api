@@ -8,6 +8,7 @@ import (
 	"reservation.api"
 	"user.api"
 	"general.api"
+	"upload.api"
 )
 
 // api 不会自动继承 prefix / jwt 等配置

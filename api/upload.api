@@ -1,0 +1,22 @@
+syntax = "v1"
+
+type RoomSeat {
+    room string `json:"rooms"`
+    seatid []string `json:"seatid"`
+}
+
+type UploadSeatRequest {
+    rooms []RoomSeat `json:"rooms"`
+    startTime string  `json:"start_time"`
+    endTime string `json:"end_time"`
+}
+
+@server (
+    prefix: "/api/v1"
+    jwt:    Auth
+)
+
+service seat-api {
+    @handler UploadSeatCsv
+    post /upload (UploadSeatRequest) returns (GeneralRes)
+}
