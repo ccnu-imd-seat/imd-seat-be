@@ -19,7 +19,7 @@ type (
 	// and implement the added methods in customSeatModel.
 	SeatModel interface {
 		GetSeatInfobyDateAndID(ctx context.Context, date time.Time, roomid string) ([]*Seat, error)
-		ChangeSeatStatus(ctx context.Context, date time.Time, status, seat string) error
+		ChangeSeatStatusByType(ctx context.Context, date time.Time, status, seat, typing string) error
 		FindOneBySeatRoomDate(ctx context.Context, seat string, room string, date time.Time) (*Seat, error)
 		InsertSeatsForDateRange(ctx context.Context, room string, seats []string, startDate, endDate string) error
 		DeleteSeatsBeforeDate(ctx context.Context, date string) error
@@ -45,10 +45,23 @@ func (c *customSeatModel) GetSeatInfobyDateAndID(ctx context.Context, date time.
 }
 
 // 改变座位状态
-func (c *customSeatModel) ChangeSeatStatus(ctx context.Context, date time.Time, status, seat string) error {
-	query := fmt.Sprintf("update %s set `status` = ? where `seat` = ? and `date` = ?", c.table)
-	_, err := c.conn.ExecCtx(ctx, query, status, seat, date)
-	return err
+func (c *customSeatModel) ChangeSeatStatusByType(ctx context.Context, date time.Time, status, seat, typing string) error {
+	if typing == "day" {
+		query := fmt.Sprintf("update %s set `status` = ? where `seat` = ? and `date` = ?", c.table)
+		_, err := c.conn.ExecCtx(ctx, query, status, seat, date)
+		return err
+	} else if typing == "week" {
+		for i := 0; i < 7; i++ {
+			currentDate := date.AddDate(0, 0, i)
+			query := fmt.Sprintf("UPDATE %s SET `status` = ? WHERE `seat` = ? AND `date` = ?", c.table)
+			if _, err := c.conn.ExecCtx(ctx, query, status, seat, currentDate); err != nil {
+				return err
+			}
+		}
+	} else {
+		return errors.New("type 格式错误")
+	}
+	return nil
 }
 
 // 查看座位状态
