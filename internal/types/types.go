@@ -39,8 +39,8 @@ type FeedbackReq struct {
 }
 
 type FeedbackRes struct {
-	Base Base
-	Data []Feedback `json:"feedback"`
+	Base
+	Data []Feedback `json:"data"`
 }
 
 type GeneralRes struct {

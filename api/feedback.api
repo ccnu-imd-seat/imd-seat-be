@@ -5,8 +5,8 @@ type (
 		Content string `json:"content"`
 	}
 	FeedbackRes {
-		Base Base  
-		Data []Feedback `json:"feedback"`
+		Base  
+		Data []Feedback `json:"data"`
 	}
 	Feedback {
 		Content string `json:"content"`
