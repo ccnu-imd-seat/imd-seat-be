@@ -4,12 +4,12 @@ Host: "0.0.0.0"
 Port: 8080
   
 MySQL:
-  Name: "seat_database"         
+  Name: "test"         
   User: "root"                  
-  Password: "password"         
+  Password: "beky2006"         
   Host: "localhost"             
   Port: 3306                    
 
 Auth:
-  AccessSecret: "your_jwt_secret_key"  # JWT 密钥
+  AccessSecret: "abcdefghijklmn12345"  # JWT 密钥
   AccessExpire: 3600                # JWT Token 过期时间（单位：秒）
