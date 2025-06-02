@@ -16,8 +16,8 @@ type (
 		userModel
 		withSession(session sqlx.Session) UserModel
 		FindScoreByID(ctx context.Context, studentID string) (int, error)
-		UpdateScore(ctx context.Context, studentID string, score int) error
-		RenewScore(ctx context.Context) error
+		UpdateScore(ctx context.Context,studentID string,score int)error
+		RenewScore(ctx context.Context)error
 	}
 
 	customUserModel struct {
@@ -43,17 +43,17 @@ func (m *customUserModel) FindScoreByID(ctx context.Context, studentID string) (
 	return int(user.Score), err
 }
 
-// 更新信誉分
-func (m *customUserModel) UpdateScore(ctx context.Context, studentID string, score int) error {
-	query := fmt.Sprintf("update %s set `score` = ? where `student_id` = ?", m.table)
-	_, err := m.conn.ExecCtx(ctx, query, score, studentID)
+//更新信誉分
+func(m *customUserModel)UpdateScore(ctx context.Context,studentID string,score int)error{
+	query:=fmt.Sprintf("update %s set `score` = ? where `student_id` = ?",m.table)
+	_,err:=m.conn.ExecCtx(ctx,query,score,studentID)
 	return err
 }
 
-// 恢复信誉分
-func (m *customUserModel) RenewScore(ctx context.Context) error {
-	query := fmt.Sprintf("update %s set `score` = ?", m.table)
-	_, err := m.conn.ExecCtx(ctx, query, 300)
+//恢复信誉分
+func(m *customUserModel)RenewScore(ctx context.Context)error{
+	query:=fmt.Sprintf("update %s set `score` = ?",m.table)
+	_,err:=m.conn.ExecCtx(ctx,query,400)
 	return err
 }
 

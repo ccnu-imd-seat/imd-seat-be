@@ -15,7 +15,6 @@ type (
 	// SeatModel is an interface to be customized, add more methods here,
 	// and implement the added methods in customSeatModel.
 	SeatModel interface {
-		GetAvaliabledays(ctx context.Context) ([]time.Time, error)
 		GetSeatInfobyDateAndID(ctx context.Context, date time.Time, roomid string) ([]*Seat, error)
 		ChangeSeatStatus(ctx context.Context, date time.Time, status, seat string) error
 		FindOneBySeatRoomDate(ctx context.Context, seat string, room string, date time.Time) (*Seat, error)
@@ -26,23 +25,7 @@ type (
 	customSeatModel struct {
 		*defaultSeatModel
 	}
-	daterow struct {
-		Date time.Time `db:"date"`
-	}
 )
-
-// 获取可预约日期
-func (c *customSeatModel) GetAvaliabledays(ctx context.Context) ([]time.Time, error) {
-	query := fmt.Sprintf("select distinct date as date from %s order by date", c.table)
-	var rows []daterow
-	err := c.conn.QueryRowsCtx(ctx, &rows, query)
-	//整合结果
-	dates := make([]time.Time, 0, len(rows))
-	for _, r := range rows {
-		dates = append(dates, r.Date)
-	}
-	return dates, err
-}
 
 // 获取某天某座位的具体信息
 func (c *customSeatModel) GetSeatInfobyDateAndID(ctx context.Context, date time.Time, roomid string) ([]*Seat, error) {
@@ -59,11 +42,11 @@ func (c *customSeatModel) GetSeatInfobyDateAndID(ctx context.Context, date time.
 // 改变座位状态
 func (c *customSeatModel) ChangeSeatStatus(ctx context.Context, date time.Time, status, seat string) error {
 	query := fmt.Sprintf("update %s set `status` = ? where `seat` = ? and `date` = ?", c.table)
-	_, err := c.conn.ExecCtx(ctx, query, status, seat, date)
+	_,err := c.conn.ExecCtx(ctx, query, status, seat, date)
 	return err
 }
 
-// 查看座位状态
+//查看座位状态
 func (c *customSeatModel) FindOneBySeatRoomDate(ctx context.Context, seat string, room string, date time.Time) (*Seat, error) {
 	query := fmt.Sprintf("select %s from %s where `seat` = ? and `room` = ? and `date` = ? limit 1", seatRows, c.table)
 	var seatInfo Seat
