@@ -53,7 +53,7 @@ func (m *customUserModel) UpdateScore(ctx context.Context, studentID string, sco
 // 恢复信誉分
 func (m *customUserModel) RenewScore(ctx context.Context) error {
 	query := fmt.Sprintf("update %s set `score` = ?", m.table)
-	_, err := m.conn.ExecCtx(ctx, query, 300)
+	_, err := m.conn.ExecCtx(ctx, query, 100)
 	return err
 }
 
