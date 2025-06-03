@@ -30,7 +30,7 @@ type (
 		Data AvailableDates `json:"data"`
 	}
 	SeatInfo {
-		SeatID int    `json:"seat_id"`
+		SeatID string `json:"seat_id"`
 		Status string `json:"status"`
 	}
 	SeatListData {

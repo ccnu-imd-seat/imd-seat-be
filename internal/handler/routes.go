@@ -84,6 +84,7 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		// 进行 with 操作后返回的依然是[]rest.Route
 		rest.WithMiddleware(serverCtx.AuthMiddleware, authRoutes...),
 		rest.WithPrefix("/api/v1"),
+		rest.WithTimeout(10*time.Minute),
 	)
 
 }

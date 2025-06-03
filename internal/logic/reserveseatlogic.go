@@ -32,7 +32,7 @@ func NewReserveSeatLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Reser
 
 func (l *ReserveSeatLogic) ReserveSeat(req *types.ReserveSeatReq) (resp *types.ReserveSeatRes, err error) {
 	debug := l.ctx.Value("DEBUG_MODE")
-	fmt.Println(debug)
+	fmt.Println(debug)	
 	studentID, ok := contextx.GetStudentID(l.ctx)
 	if !ok {
 		return nil, errorx.WrapError(errorx.JWTError, errors.New("token读取学号失败"))

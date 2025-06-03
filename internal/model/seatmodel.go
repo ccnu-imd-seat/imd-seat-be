@@ -85,7 +85,7 @@ func (c *customSeatModel) ChangeSeatStatusByType(ctx context.Context, date time.
 func (c *customSeatModel) FindOneBySeatRoomDate(ctx context.Context, seat string, room string, date time.Time) (*Seat, error) {
 	query := fmt.Sprintf("select %s from %s where `seat` = ? and `room` = ? and `date` = ? limit 1", seatRows, c.table)
 	var seatInfo Seat
-	err := c.conn.QueryRowCtx(ctx, &seatInfo, query, seat, room, date)
+	err := c.conn.QueryRowCtx(ctx, &seatInfo, query, seat, room, date.Format(time.DateOnly))
 	if err != nil {
 		return nil, err
 	}
