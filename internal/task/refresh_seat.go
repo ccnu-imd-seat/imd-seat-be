@@ -89,7 +89,7 @@ func ReduceScore(ctx context.Context, svcCtx *svc.ServiceContext, StudentID stri
 	if err != nil {
 		return errorx.WrapError(errorx.FetchErr, err)
 	}
-	score = score - 100
+	score = score - 50
 	if score < 0 {
 		score = 0
 	}
