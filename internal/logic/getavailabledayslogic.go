@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"imd-seat-be/internal/pkg/errorx"
 	"imd-seat-be/internal/pkg/response"
 	"imd-seat-be/internal/svc"
 	"imd-seat-be/internal/types"
@@ -27,43 +28,44 @@ func NewGetAvailableDaysLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 }
 
 func (l *GetAvailableDaysLogic) GetAvailableDays(Type string) (resp *types.AvailableDatesRes, err error) {
-	//获取当前时间
-	now := time.Now().Local()
+	//获取可用天数
+	dates, err := l.svcCtx.SeatModel.GetAvaliabledays(l.ctx)
+	if err != nil {
+		return nil, errorx.WrapError(errorx.FetchErr, err)
+	}
 	resp = &types.AvailableDatesRes{
 		Base: response.Success(),
-		Data: GetThisWeekDays(now, Type),
+		Data: types.AvailableDates{
+			Dates: SyncAvaliableday(Type, dates),
+		},
 	}
 	return resp, nil
 }
 
-// 获取本周剩余日期
-func GetThisWeekDays(t time.Time, Type string) types.AvailableDates {
-	weekday := t.Weekday()
-	if int(weekday) == 0 {
-		return types.AvailableDates{
-			Dates: []types.DateInfo{},
-		}
-
+// 整合日期
+func SyncAvaliableday(Type string, dates []time.Time) []types.DateInfo {
+	if len(dates)==0{
+		return []types.DateInfo{}
 	}
-	DayRemaining := 7 - int(weekday)
-	var date types.DateInfo
-	var dates []types.DateInfo
-	if Type == "day" {
-		for i := 1; i <= DayRemaining; i++ {
-			dates = append(dates, types.DateInfo{
-				Type: "day",
-				Date: t.AddDate(0, 0, i).Format("2006-01-02"),
-			})
+	var AvailableDates []types.DateInfo
+	if Type == "week" {
+		datestr1:=dates[1].Format("2006-01-02")
+		datestr2:=dates[len(dates)-1].Format("2006-01-02")
+		date := types.DateInfo{
+			Type: "week",
+			Date: fmt.Sprintf("%s - %s", datestr1,datestr2),
 		}
+		AvailableDates = append(AvailableDates, date)
 	} else {
-		date.Type = "week"
-		monday := t.AddDate(0, 0, -int(weekday)+1)
-		sunday := monday.AddDate(0, 0, 6)
-		datestr := fmt.Sprintf("%s——%s", monday.Format("2006-01-02"),sunday.Format("2006-01-02"))
-		date.Date = datestr
-		dates = append(dates, date)
+		for i := 1; i < len(dates); i++ {
+			datestr:=dates[i].Format("2006-01-02")
+			date := types.DateInfo{
+				Type: "day",
+				Date: datestr,
+			}
+			AvailableDates = append(AvailableDates, date)
+		}
 	}
-	return types.AvailableDates{
-		Dates: dates,
-	}
+	logx.Infof("date：%v",AvailableDates)
+	return AvailableDates
 }
