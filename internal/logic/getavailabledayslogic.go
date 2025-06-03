@@ -2,7 +2,6 @@ package logic
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"imd-seat-be/internal/pkg/errorx"
@@ -44,28 +43,58 @@ func (l *GetAvailableDaysLogic) GetAvailableDays(Type string) (resp *types.Avail
 
 // 整合日期
 func SyncAvaliableday(Type string, dates []time.Time) []types.DateInfo {
-	if len(dates)==0{
+	if len(dates) == 0 {
 		return []types.DateInfo{}
 	}
+
 	var AvailableDates []types.DateInfo
+
 	if Type == "week" {
-		datestr1:=dates[1].Format("2006-01-02")
-		datestr2:=dates[len(dates)-1].Format("2006-01-02")
-		date := types.DateInfo{
-			Type: "week",
-			Date: fmt.Sprintf("%s - %s", datestr1,datestr2),
-		}
-		AvailableDates = append(AvailableDates, date)
-	} else {
-		for i := 1; i < len(dates); i++ {
-			datestr:=dates[i].Format("2006-01-02")
-			date := types.DateInfo{
-				Type: "day",
-				Date: datestr,
+		// 先筛选满足“周一”且后面还有完整一周的日期
+		// 先去除最后一天不是周日时，去掉最后一个周一
+		lastDate := dates[len(dates)-1]
+		lastWeekday := lastDate.Weekday()
+		if lastWeekday != time.Sunday {
+			// 去掉最后一个周一
+			for i := len(dates) - 1; i >= 0; i-- {
+				if dates[i].Weekday() == time.Monday {
+					dates = dates[:i] // 去掉这个及后面所有元素
+					break
+				}
 			}
-			AvailableDates = append(AvailableDates, date)
+		}
+
+		for i := 0; i < len(dates); i++ {
+			if dates[i].Weekday() == time.Monday {
+				// 判断后面是否还有完整一周
+				weekEnd := dates[i].AddDate(0, 0, 6) // 这一周的周日
+				if !weekEnd.After(lastDate) {
+					dateStr := dates[i].Format("2006-01-02")
+					AvailableDates = append(AvailableDates, types.DateInfo{
+						Type: "week",
+						Date: dateStr,
+					})
+				}
+			}
+		}
+
+	} else if Type == "day" { // day类型，只返回本周剩余天（不含今天），若今天是周日不返回
+		now := time.Now()
+		todayWeekday := now.Weekday()
+		if todayWeekday == time.Sunday {
+		} else {
+			// 返回dates中大于今天且属于本周（到周日）的日期
+			// 本周周日
+			sunday := now.AddDate(0, 0, 7-int(todayWeekday))
+			for _, d := range dates {
+				if d.After(now) && !d.After(sunday) {
+					AvailableDates = append(AvailableDates, types.DateInfo{
+						Type: "day",
+						Date: d.Format("2006-01-02"),
+					})
+				}
+			}
 		}
 	}
-	logx.Infof("date：%v",AvailableDates)
 	return AvailableDates
 }
