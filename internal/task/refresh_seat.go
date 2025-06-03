@@ -79,7 +79,15 @@ func Violation(ctx context.Context, svcCtx *svc.ServiceContext) error {
 		if err != nil {
 			log.Printf("更新用户:%s信誉分失败:%v", reservation.StudentId, err)
 		}
+		//如果是按周预约，释放后续座位
+		if reservation.Type == "week" && parsedTime.Weekday() != time.Sunday {
+			err = svcCtx.SeatModel.ChangeSeatReservingToAvailable(ctx, reservation.Seat)
+			if err != nil {
+				log.Printf("释放座位:%s状态失败:%v", reservation.Seat, err)
+			}
+		}
 	}
+
 	return nil
 }
 

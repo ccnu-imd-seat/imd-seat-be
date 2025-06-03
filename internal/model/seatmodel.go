@@ -19,6 +19,7 @@ type (
 	// and implement the added methods in customSeatModel.
 	SeatModel interface {
 		GetAvaliabledays(ctx context.Context) ([]time.Time, error)
+		ChangeSeatReservingToAvailable(ctx context.Context, seat string) error
 		GetSeatInfobyDateAndID(ctx context.Context, date time.Time, roomid string) ([]*Seat, error)
 		ChangeSeatStatusByType(ctx context.Context, date time.Time, status, seat, typing string) error
 		FindOneBySeatRoomDate(ctx context.Context, seat string, room string, date time.Time) (*Seat, error)
@@ -77,6 +78,16 @@ func (c *customSeatModel) ChangeSeatStatusByType(ctx context.Context, date time.
 		}
 	} else {
 		return errors.New("type 格式错误")
+	}
+	return nil
+}
+
+// 将指定 seatID 的所有预约中状态改为空闲
+func (c *customSeatModel) ChangeSeatReservingToAvailable(ctx context.Context, seat string) error {
+	query := fmt.Sprintf("UPDATE %s SET `status` = ? WHERE `seat` = ? AND `status` = ?",c.table)
+	_, err := c.conn.ExecCtx(ctx, query, types.AvaliableStatus, seat, types.BookedStatus)
+	if err != nil {
+		return err
 	}
 	return nil
 }
