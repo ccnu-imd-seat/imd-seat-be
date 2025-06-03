@@ -2,7 +2,10 @@ package model
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"imd-seat-be/internal/pkg/errorx"
+	"imd-seat-be/internal/types"
 	"time"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -17,8 +20,10 @@ type (
 	SeatModel interface {
 		GetAvaliabledays(ctx context.Context) ([]time.Time, error)
 		GetSeatInfobyDateAndID(ctx context.Context, date time.Time, roomid string) ([]*Seat, error)
-		ChangeSeatStatus(ctx context.Context, date time.Time, status, seat string) error
+		ChangeSeatStatusByType(ctx context.Context, date time.Time, status, seat, typing string) error
 		FindOneBySeatRoomDate(ctx context.Context, seat string, room string, date time.Time) (*Seat, error)
+		InsertSeatsForDateRange(ctx context.Context, room string, seats []string, startDate, endDate string) error
+		DeleteSeatsBeforeDate(ctx context.Context, date string) error
 		seatModel
 		withSession(session sqlx.Session) SeatModel
 	}
@@ -57,10 +62,23 @@ func (c *customSeatModel) GetSeatInfobyDateAndID(ctx context.Context, date time.
 }
 
 // 改变座位状态
-func (c *customSeatModel) ChangeSeatStatus(ctx context.Context, date time.Time, status, seat string) error {
-	query := fmt.Sprintf("update %s set `status` = ? where `seat` = ? and `date` = ?", c.table)
-	_, err := c.conn.ExecCtx(ctx, query, status, seat, date)
-	return err
+func (c *customSeatModel) ChangeSeatStatusByType(ctx context.Context, date time.Time, status, seat, typing string) error {
+	if typing == "day" {
+		query := fmt.Sprintf("update %s set `status` = ? where `seat` = ? and `date` = ?", c.table)
+		_, err := c.conn.ExecCtx(ctx, query, status, seat, date)
+		return err
+	} else if typing == "week" {
+		for i := 0; i < 7; i++ {
+			currentDate := date.AddDate(0, 0, i)
+			query := fmt.Sprintf("UPDATE %s SET `status` = ? WHERE `seat` = ? AND `date` = ?", c.table)
+			if _, err := c.conn.ExecCtx(ctx, query, status, seat, currentDate); err != nil {
+				return err
+			}
+		}
+	} else {
+		return errors.New("type 格式错误")
+	}
+	return nil
 }
 
 // 查看座位状态
@@ -72,6 +90,46 @@ func (c *customSeatModel) FindOneBySeatRoomDate(ctx context.Context, seat string
 		return nil, err
 	}
 	return &seatInfo, nil
+}
+
+// 指定日期之间生成
+func (c *customSeatModel) InsertSeatsForDateRange(ctx context.Context, room string, seats []string, startDate, endDate string) error {
+	sDate, err := time.Parse(time.DateOnly, startDate)
+	if err != nil {
+		return errors.New("startDate 参数不符合格式")
+	}
+
+	eDate, err := time.Parse(time.DateOnly, endDate)
+	if err != nil {
+		return errors.New("endDate 参数不符合格式")
+	}
+
+	for date := sDate; !date.After(eDate); date = date.AddDate(0, 0, 1) {
+		for _, seatID := range seats {
+			seat := &Seat{
+				Seat:   seatID,
+				Room:   room,
+				Date:   date,
+				Status: types.AvaliableStatus,
+			}
+			_, err := c.Insert(ctx, seat)
+			if err != nil {
+				return errorx.WrapError(errorx.CreateErr, fmt.Errorf("failed to insert seat %s on %v: %w", seatID, date, err))
+			}
+
+		}
+
+	}
+	return nil
+}
+
+func (c *customSeatModel) DeleteSeatsBeforeDate(ctx context.Context, date string) error {
+	query := fmt.Sprintf("DELETE FROM %s WHERE `date` < ?", c.table)
+	_, err := c.conn.ExecCtx(ctx, query, date)
+	if err != nil {
+		return errorx.WrapError(errorx.DeleteErr, fmt.Errorf("删除座位信息失败: %w", err))
+	}
+	return nil
 }
 
 // NewSeatModel returns a model for the database table.

@@ -51,7 +51,7 @@ func (l *CancelReservationLogic) CancelReservation(req *types.CancelReservationR
 
 	//检验是否合规
 	if !l.CheckCancelRule(ReservationInfro) {
-		return nil,errorx.WrapError(errorx.ViolateErr,errors.New("取消请求不合规"))
+		return nil, errorx.WrapError(errorx.ViolateErr, errors.New("取消请求不合规"))
 	}
 
 	//更改预约状态
@@ -61,7 +61,7 @@ func (l *CancelReservationLogic) CancelReservation(req *types.CancelReservationR
 	}
 
 	//释放座位，改状态为可预约
-	err = l.svcCtx.SeatModel.ChangeSeatStatus(l.ctx, ReservationInfro.Date, types.AvaliableStatus, ReservationInfro.Seat)
+	err = l.svcCtx.SeatModel.ChangeSeatStatusByType(l.ctx, ReservationInfro.Date, types.AvaliableStatus, ReservationInfro.Seat, ReservationInfro.Type)
 	if err != nil {
 		return nil, errorx.WrapError(errorx.UpdateErr, err)
 	}

@@ -83,7 +83,7 @@ func (l *ReserveSeatLogic) ReserveSeat(req *types.ReserveSeatReq) (resp *types.R
 	}
 
 	// 更新座位状态为已预约
-	err = l.svcCtx.SeatModel.ChangeSeatStatus(l.ctx, t, types.BookedStatus, req.SeatID)
+	err = l.svcCtx.SeatModel.ChangeSeatStatusByType(l.ctx, t, types.BookedStatus, req.SeatID, req.Type)
 	if err != nil {
 		return nil, errorx.WrapError(errorx.UpdateErr, err)
 	}

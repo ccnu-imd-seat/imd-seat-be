@@ -39,8 +39,8 @@ type FeedbackReq struct {
 }
 
 type FeedbackRes struct {
-	Base Base
-	Data []Feedback `json:"feedback"`
+	Base
+	Data []Feedback `json:"data"`
 }
 
 type GeneralRes struct {
@@ -111,6 +111,11 @@ type RoomListRes struct {
 	Data RoomList `json:"data"`
 }
 
+type RoomSeat struct {
+	Room   string `json:"room"`
+	Seatid []string `json:"seatid"`
+}
+
 type ScoreData struct {
 	Score int `json:"score"`
 }
@@ -129,6 +134,12 @@ type SeatListData struct {
 type SeatListRes struct {
 	Base
 	Data SeatListData `json:"data"`
+}
+
+type UploadSeatRequest struct {
+	Rooms     []RoomSeat `json:"rooms"`
+	StartTime string     `json:"start_time"`
+	EndTime   string     `json:"end_time"`
 }
 
 type CheckIn struct {

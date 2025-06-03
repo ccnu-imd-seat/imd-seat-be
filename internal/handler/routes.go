@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"time"
 
 	"imd-seat-be/internal/svc"
 
@@ -18,6 +19,7 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			},
 		},
 		rest.WithPrefix("/api/v1"),
+		rest.WithTimeout(time.Minute),
 	)
 
 	authRoutes := []rest.Route{
@@ -70,6 +72,11 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			Method:  http.MethodGet,
 			Path:    "/checkin",
 			Handler: checkInHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/upload",
+			Handler: UploadSeatCsvHandler(serverCtx),
 		},
 	}
 
