@@ -37,6 +37,9 @@ func (l *ReserveSeatLogic) ReserveSeat(req *types.ReserveSeatReq) (resp *types.R
 	if !ok {
 		return nil, errorx.WrapError(errorx.JWTError, errors.New("token读取学号失败"))
 	}
+	if err:= l.svcCtx.UserModel.CheckUserExist(l.ctx, studentID); err != nil {
+		return nil,errorx.WrapError(errorx.FetchErr, err)
+	}
 	format := "2006-01-02"
 	t, err := time.ParseInLocation(format, req.Date, time.Local)
 	if err != nil {
