@@ -25,6 +25,7 @@ type (
 		FindOneBySeatRoomDate(ctx context.Context, seat string, room string, date time.Time) (*Seat, error)
 		InsertSeatsForDateRange(ctx context.Context, room string, seats []string, startDate, endDate string) error
 		DeleteSeatsBeforeDate(ctx context.Context, date string) error
+		CompletedReservation(ctx context.Context) error
 		seatModel
 		withSession(session sqlx.Session) SeatModel
 	}
@@ -84,7 +85,7 @@ func (c *customSeatModel) ChangeSeatStatusByType(ctx context.Context, date time.
 
 // 将指定 seatID 的所有预约中状态改为空闲
 func (c *customSeatModel) ChangeSeatReservingToAvailable(ctx context.Context, seat string) error {
-	query := fmt.Sprintf("UPDATE %s SET `status` = ? WHERE `seat` = ? AND `status` = ?",c.table)
+	query := fmt.Sprintf("UPDATE %s SET `status` = ? WHERE `seat` = ? AND `status` = ?", c.table)
 	_, err := c.conn.ExecCtx(ctx, query, types.AvaliableStatus, seat, types.BookedStatus)
 	if err != nil {
 		return err
@@ -139,6 +140,17 @@ func (c *customSeatModel) DeleteSeatsBeforeDate(ctx context.Context, date string
 	_, err := c.conn.ExecCtx(ctx, query, date)
 	if err != nil {
 		return errorx.WrapError(errorx.DeleteErr, fmt.Errorf("删除座位信息失败: %w", err))
+	}
+	return nil
+}
+
+// 查询今天的预约单并标记成已完成
+func (c *customSeatModel) CompletedReservation(ctx context.Context) error {
+	today := time.Now().Format(time.DateOnly)
+	query := fmt.Sprintf("UPDATE %s SET `status` = ? WHERE `date` = ? AND `status` = ?", c.table)
+	_, err := c.conn.ExecCtx(ctx, query, types.CompletedStatus, today, types.CheckedInStatus)
+	if err != nil {
+		return errorx.WrapError(errorx.UpdateErr, fmt.Errorf("更新已完成预约失败: %w", err))
 	}
 	return nil
 }

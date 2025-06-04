@@ -48,6 +48,17 @@ func RegisterTasks(ctx context.Context, svcCtx *svc.ServiceContext) {
 	if err != nil {
 		log.Println("注册定时清理座位信息失败:", err)
 	}
+	// 每天晚上 11 点完成预约
+	_, err = c.AddFunc("0 0 23 * * *", func() {
+		if err := CompletedReservation(ctx, svcCtx); err != nil {
+			log.Println("预约完成失败:", err)
+		} else {
+			log.Println("预约完成成功")
+		}
+	})
+	if err != nil {
+		log.Println("注册定时完成预约任务失败:", err)
+	}
 	c.Start()
 
 	go func() {
@@ -130,5 +141,18 @@ func CleanExpiredSeats(ctx context.Context, svcCtx *svc.ServiceContext) error {
 	}
 
 	log.Println("过期座位信息清理成功")
+	return nil
+}
+
+// 每天晚上完成预约
+func CompletedReservation(ctx context.Context, svcCtx *svc.ServiceContext) error {
+	err := svcCtx.SeatModel.CompletedReservation(ctx)
+
+	if err != nil {
+		log.Println("预约完成失败的说：", err)
+		return errorx.WrapError(errorx.UpdateErr, err)
+	}
+
+	log.Println("预约完成")
 	return nil
 }
