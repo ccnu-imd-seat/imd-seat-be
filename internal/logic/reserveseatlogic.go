@@ -32,13 +32,13 @@ func NewReserveSeatLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Reser
 
 func (l *ReserveSeatLogic) ReserveSeat(req *types.ReserveSeatReq) (resp *types.ReserveSeatRes, err error) {
 	debug := l.ctx.Value("DEBUG_MODE")
-	fmt.Println(debug)	
+	fmt.Println(debug)
 	studentID, ok := contextx.GetStudentID(l.ctx)
 	if !ok {
 		return nil, errorx.WrapError(errorx.JWTError, errors.New("token读取学号失败"))
 	}
-	if err:= l.svcCtx.UserModel.CheckUserExist(l.ctx, studentID); err != nil {
-		return nil,errorx.WrapError(errorx.FetchErr, err)
+	if err := l.svcCtx.UserModel.CheckUserExist(l.ctx, studentID); err != nil {
+		return nil, errorx.WrapError(errorx.FetchErr, err)
 	}
 	format := "2006-01-02"
 	t, err := time.ParseInLocation(format, req.Date, time.Local)
@@ -112,7 +112,7 @@ func CheckScore(ctx context.Context, svcCtx *svc.ServiceContext, StudentID strin
 	if err != nil {
 		return false, err
 	}
-	if score > 0 {
+	if score >= 60 {
 		return true, nil
 	}
 	return false, nil

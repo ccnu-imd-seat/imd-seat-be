@@ -144,11 +144,11 @@ func (c *customSeatModel) DeleteSeatsBeforeDate(ctx context.Context, date string
 	return nil
 }
 
-// 查询今天的预约单并标记成已完成
+// 查询今天的预约单并标记成已生效
 func (c *customSeatModel) CompletedReservation(ctx context.Context) error {
 	today := time.Now().Format(time.DateOnly)
 	query := fmt.Sprintf("UPDATE %s SET `status` = ? WHERE `date` = ? AND `status` = ?", c.table)
-	_, err := c.conn.ExecCtx(ctx, query, types.CompletedStatus, today, types.CheckedInStatus)
+	_, err := c.conn.ExecCtx(ctx, query, types.CompletedStatus, today, types.EffectiveStatus)
 	if err != nil {
 		return errorx.WrapError(errorx.UpdateErr, fmt.Errorf("更新已完成预约失败: %w", err))
 	}

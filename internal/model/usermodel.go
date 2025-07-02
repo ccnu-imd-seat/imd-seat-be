@@ -57,6 +57,7 @@ func (m *customUserModel) RenewScore(ctx context.Context) error {
 	_, err := m.conn.ExecCtx(ctx, query, 100)
 	return err
 }
+
 //判断用户是否存在
 func(m *customUserModel)CheckUserExist(ctx context.Context,studentID string)error{
 	query:=fmt.Sprintf("select 1 from %s where `student_id` = ?", m.table)
