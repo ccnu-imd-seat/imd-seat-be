@@ -121,7 +121,7 @@ type ScoreData struct {
 }
 
 type SeatInfo struct {
-	SeatID int    `json:"seat_id"`
+	SeatID string `json:"seat_id"`
 	Status string `json:"status"`
 }
 

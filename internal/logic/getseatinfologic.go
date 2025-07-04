@@ -44,7 +44,7 @@ func (l *GetSeatInfoLogic) GetSeatInfo(date, room string) (resp *types.SeatListR
 	var SeatInfro []types.SeatInfo
 	for _, seat := range seatinfro {
 		SeatInfro = append(SeatInfro, types.SeatInfo{
-			SeatID: int(seat.Id),
+			SeatID: seat.Seat,
 			Status: seat.Status,
 		})
 	}

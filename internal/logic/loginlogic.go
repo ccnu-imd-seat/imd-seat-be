@@ -66,7 +66,7 @@ func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginRes, err error
 	if err == sqlx.ErrNotFound {
 		newUser := &model.User{
 			StudentId: req.Username,
-			Score:     300,
+			Score:     100,
 		}
 		_, err = l.svcCtx.UserModel.Insert(l.ctx, newUser)
 		if err != nil {

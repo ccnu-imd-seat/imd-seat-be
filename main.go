@@ -8,6 +8,7 @@ import (
 	"imd-seat-be/internal/config"
 	"imd-seat-be/internal/handler"
 	"imd-seat-be/internal/pkg/response"
+	"imd-seat-be/internal/pkg/timex"
 	"imd-seat-be/internal/svc"
 	"imd-seat-be/internal/task"
 
@@ -20,6 +21,7 @@ import (
 var configFile = flag.String("f", "etc/config.yaml", "the config file")
 
 func main() {
+	timex.Init()
 	flag.Parse()
 
 	var c config.Config
