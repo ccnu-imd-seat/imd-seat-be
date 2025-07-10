@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"errors"
+	"time"
 
 	"imd-seat-be/internal/pkg/contextx"
 	"imd-seat-be/internal/pkg/errorx"
@@ -31,6 +32,13 @@ func (l *CheckInLogic) CheckIn(req *types.CheckIn) (resp *types.GeneralRes, err 
 	studentID, ok := contextx.GetStudentID(l.ctx)
 	if !ok {
 		return nil, errorx.WrapError(errorx.JWTError, errors.New("token读取学号失败"))
+	}
+
+	now := time.Now()
+	// 获取当天 12:00 时间
+	noon := time.Date(now.Year(), now.Month(), now.Day(), 12, 0, 0, 0, now.Location())
+	if now.After(noon) {
+		return nil, errorx.WrapError(errorx.AfterCheckErr, errors.New("无法签到"))
 	}
 
 	reservation, err := l.svcCtx.ReservationModel.GetTodayReservationByStudentId(l.ctx, studentID, req.Seatid)
