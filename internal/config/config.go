@@ -21,6 +21,13 @@ type Config struct {
 		Host     string
 		Port     int
 	}
+
+	Qiniu struct{
+		AccessKey string
+		SecretKey string
+		Domain string
+		Bucket string
+	}
 }
 
 func (c Config) DSN() string {

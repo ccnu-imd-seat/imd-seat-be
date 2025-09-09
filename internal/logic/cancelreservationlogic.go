@@ -61,7 +61,7 @@ func (l *CancelReservationLogic) CancelReservation(req *types.CancelReservationR
 	if err != nil {
 		return nil, errorx.WrapError(errorx.UpdateErr, err)
 	}
-
+	
 	//释放座位，改状态为可预约
 	err = l.svcCtx.SeatModel.ChangeSeatStatusByType(l.ctx, ReservationInfro.Date, types.AvaliableStatus, ReservationInfro.Seat, ReservationInfro.Type)
 	if err != nil {
