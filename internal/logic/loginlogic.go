@@ -21,7 +21,6 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/zeromicro/go-zero/core/logx"
-	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
 
 type LoginLogic struct {
@@ -63,7 +62,7 @@ func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginRes, err error
 	}
 
 	_, err = l.svcCtx.UserModel.FindScoreByID(l.ctx, req.Username)
-	if err == sqlx.ErrNotFound {
+	if err != nil {
 		newUser := &model.User{
 			StudentId: req.Username,
 			Score:     100,

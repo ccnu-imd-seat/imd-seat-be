@@ -20,6 +20,7 @@ type (
 		GetReservationByStudentId(ctx context.Context, studentId string) ([]*Reservation, error)
 		GetTodayReservationByStudentId(ctx context.Context, studentId string, seat string) (*Reservation, error)
 		GetReservationByDate(ctx context.Context, date time.Time) ([]*Reservation, error)
+		GetAnydayReservationByStudentId(ctx context.Context, studentId string, seat string, date string) (*Reservation, error)
 
 		reservationModel
 		withSession(session sqlx.Session) ReservationModel
@@ -67,6 +68,18 @@ func (c *customReservationModel) GetTodayReservationByStudentId(ctx context.Cont
 	dateStr := date.Format(time.DateOnly)
 	status := types.BookedStatus
 	err := c.conn.QueryRowCtx(ctx, &reservation, query, studentId, dateStr, seat, status)
+	if err != nil {
+		return nil, err
+	}
+	return &reservation, nil
+}
+
+// 根据根据学号和日期查找当天预约进行签到处理
+func (c *customReservationModel) GetAnydayReservationByStudentId(ctx context.Context, studentId string, seat string, date string) (*Reservation, error) {
+	query := fmt.Sprintf("SELECT %s FROM %s WHERE `student_id` = ? and `date` = ? and `seat` = ? and `status` = ?", reservationRows, c.table)
+	var reservation Reservation
+	status := types.BookedStatus
+	err := c.conn.QueryRowCtx(ctx, &reservation, query, studentId, date, seat, status)
 	if err != nil {
 		return nil, err
 	}

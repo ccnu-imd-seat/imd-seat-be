@@ -4,11 +4,11 @@ Host: "0.0.0.0"
 Port: 8080
   
 MySQL:
-  Name: "seat_database"         
-  User: "root"                  
-  Password: "password"         
-  Host: "localhost"             
-  Port: 3306                    
+  Name: "seat_database"
+  User: "root"
+  Password: "password"
+  Host: "mysql"
+  Port: 3306
 
 Auth:
   AccessSecret: "your_jwt_secret_key"  # JWT 密钥
