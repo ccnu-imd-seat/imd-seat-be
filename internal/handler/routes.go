@@ -10,19 +10,22 @@ import (
 )
 
 func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
-	server.AddRoutes(
-		[]rest.Route{
-			{
-				Method:  http.MethodPost,
-				Path:    "/login",
-				Handler: loginHandler(serverCtx),
-			},
+	anthRoutes := []rest.Route{
+		{
+			Method:  http.MethodGet,
+			Path:    "/reservation/rooms",
+			Handler: getRoomsHandler(serverCtx),
 		},
-		rest.WithPrefix("/api/v1"),
-		rest.WithTimeout(time.Minute),
-	)
-
-	authRoutes := []rest.Route{
+		{
+			Method:  http.MethodGet,
+			Path:    "/mine/reservations",
+			Handler: getMyReservationHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/mine/score",
+			Handler: getScoreHandler(serverCtx),
+		},
 		{
 			Method:  http.MethodDelete,
 			Path:    "/reservation/cancel/:id",
@@ -43,20 +46,21 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			Path:    "/reservation/seats",
 			Handler: getSeatInfoHandler(serverCtx),
 		},
+
 		{
-			Method:  http.MethodGet,
-			Path:    "/mine/reservations",
-			Handler: getMyReservationHandler(serverCtx),
+			Method:  http.MethodPost,
+			Path:    "/new",
+			Handler: NewSeatReqHandler(serverCtx),
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/upload",
+			Handler: UploadSeatCsvHandler(serverCtx),
 		},
 		{
 			Method:  http.MethodGet,
-			Path:    "/mine/score",
-			Handler: getScoreHandler(serverCtx),
-		},
-		{
-			Method:  http.MethodGet,
-			Path:    "/reservation/rooms",
-			Handler: getRoomsHandler(serverCtx),
+			Path:    "/checkin",
+			Handler: checkInHandler(serverCtx),
 		},
 		{
 			Method:  http.MethodPost,
@@ -68,22 +72,51 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			Path:    "/feedback",
 			Handler: getFeedbackHandler(serverCtx),
 		},
+	}
+
+	server.AddRoutes(
+		rest.WithMiddleware(serverCtx.AuthMiddleware, anthRoutes...),
+		rest.WithPrefix("/api/v1"),
+		rest.WithTimeout(10*time.Minute),
+	)
+
+	adminRoutes := []rest.Route{
 		{
 			Method:  http.MethodGet,
-			Path:    "/checkin",
-			Handler: checkInHandler(serverCtx),
+			Path:    "/reservation/get_supreme_data",
+			Handler: getSupremeDataHandler(serverCtx),
 		},
 		{
-			Method:  http.MethodPost,
-			Path:    "/upload",
-			Handler: UploadSeatCsvHandler(serverCtx),
+			Method:  http.MethodGet,
+			Path:    "/reservation/get_supreme_list",
+			Handler: getSupremeListHandler(serverCtx),
 		},
 	}
 
 	server.AddRoutes(
-		// 进行 with 操作后返回的依然是[]rest.Route
-		rest.WithMiddleware(serverCtx.AuthMiddleware, authRoutes...),
+		rest.WithMiddleware(serverCtx.AuthMiddlewareAdmin, adminRoutes...),
 		rest.WithPrefix("/api/v1"),
+		rest.WithTimeout(10*time.Minute),
 	)
 
+	server.AddRoutes(
+		[]rest.Route{
+			{
+				Method:  http.MethodPost,
+				Path:    "/login",
+				Handler: loginHandler(serverCtx),
+			},
+		},
+		rest.WithPrefix("/api/v1"),
+		rest.WithTimeout(10*time.Minute),
+	)
+
+	server.AddRoute(
+		rest.Route{
+			Method:  http.MethodGet,
+			Path:    "/download",
+			Handler: download(serverCtx),
+		},
+		rest.WithTimeout(10*time.Minute),
+	)
 }

@@ -3,7 +3,9 @@ package logic
 import (
 	"context"
 	"errors"
+	"time"
 
+	"imd-seat-be/internal/model"
 	"imd-seat-be/internal/pkg/contextx"
 	"imd-seat-be/internal/pkg/errorx"
 	"imd-seat-be/internal/pkg/response"
@@ -28,20 +30,42 @@ func NewCheckInLogic(ctx context.Context, svcCtx *svc.ServiceContext) *CheckInLo
 }
 
 func (l *CheckInLogic) CheckIn(req *types.CheckIn) (resp *types.GeneralRes, err error) {
+	var reservation *model.Reservation
+	debug := l.ctx.Value("DEBUG_MODE")
+	debug_day := l.ctx.Value("DEBUG_DAY")
+
 	studentID, ok := contextx.GetStudentID(l.ctx)
 	if !ok {
 		return nil, errorx.WrapError(errorx.JWTError, errors.New("token读取学号失败"))
 	}
 
-	reservation, err := l.svcCtx.ReservationModel.GetTodayReservationByStudentId(l.ctx, studentID, req.Seatid)
-	if err != nil {
-		return nil, errorx.WrapError(errorx.FetchErr, err)
+	if debug != "1" {
+		now := time.Now()
+		// 获取当天 12:00 时间
+		noon := time.Date(now.Year(), now.Month(), now.Day(), 12, 0, 0, 0, now.Location())
+		if now.After(noon) {
+			return nil, errorx.WrapError(errorx.AfterCheckErr, errors.New("无法签到"))
+		}
 	}
 
-	if reservation.Status == types.CheckedInStatus {
+	_, err = time.Parse(time.DateOnly, debug_day.(string))
+
+	if debug == "1" && err == nil {
+		reservation, err = l.svcCtx.ReservationModel.GetAnydayReservationByStudentId(l.ctx, studentID, req.Seatid, debug_day.(string))
+		if err != nil {
+			return nil, errorx.WrapError(errorx.FetchErr, err)
+		}
+	} else {
+		reservation, err = l.svcCtx.ReservationModel.GetTodayReservationByStudentId(l.ctx, studentID, req.Seatid)
+		if err != nil {
+			return nil, errorx.WrapError(errorx.FetchErr, err)
+		}
+	}
+
+	if reservation.Status == types.EffectiveStatus {
 		return nil, errorx.WrapError(errorx.AlreadyErr, errors.New("请勿重复签到"))
 	} else if reservation.Status == types.BookedStatus {
-		reservation.Status = types.CheckedInStatus
+		reservation.Status = types.EffectiveStatus
 		err := l.svcCtx.ReservationModel.Update(l.ctx, reservation)
 		if err != nil {
 			return nil, errorx.WrapError(errorx.UpdateErr, err)

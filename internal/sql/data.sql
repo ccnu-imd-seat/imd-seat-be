@@ -28,7 +28,7 @@ CREATE TABLE `room` (
 
 CREATE TABLE `user` (
   `student_id` CHAR(15) NOT NULL COMMENT '学号',
-  `score` INT NOT NULL DEFAULT 300 COMMENT '信誉分',
+  `score` INT NOT NULL DEFAULT 100 COMMENT '信誉分',
   PRIMARY KEY (`student_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

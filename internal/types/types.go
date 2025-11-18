@@ -48,6 +48,10 @@ type GeneralRes struct {
 	Data EmptyData `json:"data"`
 }
 
+type ImageData struct {
+	ImageURL []string `json:"image_url"`
+}
+
 type LoginData struct {
 	Name      string `json:"name"`
 	StudentId string `json:"student_id"`
@@ -73,6 +77,15 @@ type MyScoreRes struct {
 	Data ScoreData `json:"data"`
 }
 
+type NewSeatReq struct {
+	Seat_id []string `json:"seat_id"`
+}
+
+type NewSeatRes struct {
+	Base
+	Data ImageData `json:"data"`
+}
+
 type ReservationData struct {
 	RoomID        string `json:"room_id"`
 	Seat          string `json:"seat"`
@@ -83,6 +96,7 @@ type ReservationData struct {
 
 type ReservationDetails struct {
 	ID     int    `json:"id"`
+	StuID  string `json:"stu_id"`
 	Type   string `json:"type"`
 	Date   string `json:"date"`
 	Room   string `json:"room"`
@@ -112,7 +126,7 @@ type RoomListRes struct {
 }
 
 type RoomSeat struct {
-	Room   string `json:"room"`
+	Room   string   `json:"rooms"`
 	Seatid []string `json:"seatid"`
 }
 
@@ -121,7 +135,7 @@ type ScoreData struct {
 }
 
 type SeatInfo struct {
-	SeatID int    `json:"seat_id"`
+	SeatID string `json:"seat_id"`
 	Status string `json:"status"`
 }
 
@@ -136,6 +150,10 @@ type SeatListRes struct {
 	Data SeatListData `json:"data"`
 }
 
+type SupremeData struct {
+	Data []ReservationData `json:"reservations"`
+}
+
 type UploadSeatRequest struct {
 	Rooms     []RoomSeat `json:"rooms"`
 	StartTime string     `json:"start_time"`
@@ -144,4 +162,16 @@ type UploadSeatRequest struct {
 
 type CheckIn struct {
 	Seatid string `form:"seat_id"`
+}
+
+type SupremeList struct {
+	Base
+	Data struct {
+		Admins [] string `json:"admins"`
+	} `json:"data"`
+}
+
+type NormalResp struct {
+	Base
+	Data string `json:"data"`
 }

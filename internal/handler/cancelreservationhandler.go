@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"net/http"
 
 	"imd-seat-be/internal/logic"
@@ -12,12 +13,16 @@ import (
 
 func cancelReservationHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		debug := r.Header.Get("DEBUG_MODE")
+		ctx := context.WithValue(r.Context(), "DEBUG_MODE", debug)
+
 		var req types.CancelReservationReq
 		if err := httpx.ParsePath(r, &req); err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)
 			return
 		}
-		l := logic.NewCancelReservationLogic(r.Context(), svcCtx)
+		l := logic.NewCancelReservationLogic(ctx, svcCtx)
 		resp, err := l.CancelReservation(&req)
 		if err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)

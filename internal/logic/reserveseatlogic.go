@@ -3,7 +3,6 @@ package logic
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"imd-seat-be/internal/model"
@@ -32,10 +31,12 @@ func NewReserveSeatLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Reser
 
 func (l *ReserveSeatLogic) ReserveSeat(req *types.ReserveSeatReq) (resp *types.ReserveSeatRes, err error) {
 	debug := l.ctx.Value("DEBUG_MODE")
-	fmt.Println(debug)
 	studentID, ok := contextx.GetStudentID(l.ctx)
 	if !ok {
 		return nil, errorx.WrapError(errorx.JWTError, errors.New("token读取学号失败"))
+	}
+	if err := l.svcCtx.UserModel.CheckUserExist(l.ctx, studentID); err != nil {
+		return nil, errorx.WrapError(errorx.FetchErr, err)
 	}
 	format := "2006-01-02"
 	t, err := time.ParseInLocation(format, req.Date, time.Local)
@@ -66,6 +67,15 @@ func (l *ReserveSeatLogic) ReserveSeat(req *types.ReserveSeatReq) (resp *types.R
 		return nil, errorx.WrapError(errorx.FetchErr, err)
 	} else if !ok {
 		return nil, errorx.WrapError(errorx.ViolateErr, err)
+	}
+
+	// 检查用户是否已有有效预约
+	has, err := l.svcCtx.ReservationModel.HasActiveReservation(l.ctx, studentID)
+	if err != nil {
+		return nil, errorx.WrapError(errorx.FetchErr, err)
+	}
+	if has {
+		return nil, errorx.WrapError(errorx.ViolateErr, errors.New("您已有预约，不能重复预约"))
 	}
 
 	ReservationInfro := model.Reservation{
@@ -109,7 +119,7 @@ func CheckScore(ctx context.Context, svcCtx *svc.ServiceContext, StudentID strin
 	if err != nil {
 		return false, err
 	}
-	if score > 0 {
+	if score >= 60 {
 		return true, nil
 	}
 	return false, nil
@@ -126,7 +136,7 @@ func CheckRule(date time.Time, types string) bool {
 			return true
 		}
 	} else if types == "week" {
-		if weekday == 0 && InTimeRange(now, 9, 18) {
+		if weekday == 0 && InTimeRange(now, 9, 21) {
 			return true
 		}
 	}

@@ -15,6 +15,7 @@ import (
 
 func RegisterTasks(ctx context.Context, svcCtx *svc.ServiceContext) {
 	c := cron.New(cron.WithSeconds())
+
 	//每天十二点进行更新
 	_, err := c.AddFunc("0 12 0 * * *", func() {
 		if err := Violation(ctx, svcCtx); err != nil {
@@ -26,8 +27,9 @@ func RegisterTasks(ctx context.Context, svcCtx *svc.ServiceContext) {
 	if err != nil {
 		log.Println("注册定时更新状态任务失败:", err)
 	}
-	//每月进行更新
-	_, err = c.AddFunc("0 0 0 1 * *", func() {
+
+	//每周一0点刷新信誉分
+	_, err = c.AddFunc("0 0 0  * * 1", func() {
 		if err := RenewScore(ctx, svcCtx); err != nil {
 			log.Println("更新信誉分失败:", err)
 		} else {
@@ -37,6 +39,7 @@ func RegisterTasks(ctx context.Context, svcCtx *svc.ServiceContext) {
 	if err != nil {
 		log.Println("注册定时更新信誉分失败:", err)
 	}
+
 	// 每天 0:05:00 清理过期座位信息
 	_, err = c.AddFunc("0 5 0 * * *", func() {
 		if err := CleanExpiredSeats(ctx, svcCtx); err != nil {
@@ -47,6 +50,18 @@ func RegisterTasks(ctx context.Context, svcCtx *svc.ServiceContext) {
 	})
 	if err != nil {
 		log.Println("注册定时清理座位信息失败:", err)
+	}
+	
+	// 每天晚上 11 点完成预约
+	_, err = c.AddFunc("0 0 23 * * *", func() {
+		if err := CompletedReservation(ctx, svcCtx); err != nil {
+			log.Println("预约完成失败:", err)
+		} else {
+			log.Println("预约完成成功")
+		}
+	})
+	if err != nil {
+		log.Println("注册定时完成预约任务失败:", err)
 	}
 	c.Start()
 
@@ -63,7 +78,7 @@ func Violation(ctx context.Context, svcCtx *svc.ServiceContext) error {
 	if err != nil {
 		return errorx.WrapError(errorx.DefaultErr, errors.New("解析时间错误"))
 	}
-	Reservations, err := svcCtx.ReservationModel.GetReservationByStatus(ctx, parsedTime, types.EffectiveStatus)
+	Reservations, err := svcCtx.ReservationModel.GetReservationByStatus(ctx, parsedTime, types.BookedStatus)
 	if err != nil {
 		return errorx.WrapError(errorx.FetchErr, err)
 	}
@@ -79,17 +94,25 @@ func Violation(ctx context.Context, svcCtx *svc.ServiceContext) error {
 		if err != nil {
 			log.Printf("更新用户:%s信誉分失败:%v", reservation.StudentId, err)
 		}
+		//如果是按周预约，释放后续座位
+		if reservation.Type == "week" && parsedTime.Weekday() != time.Sunday {
+			err = svcCtx.SeatModel.ChangeSeatReservingToAvailable(ctx, reservation.Seat)
+			if err != nil {
+				log.Printf("释放座位:%s状态失败:%v", reservation.Seat, err)
+			}
+		}
 	}
+
 	return nil
 }
 
-// 扣除信誉分
+// 扣除信誉分(违约一次扣除20分)
 func ReduceScore(ctx context.Context, svcCtx *svc.ServiceContext, StudentID string) error {
 	score, err := svcCtx.UserModel.FindScoreByID(ctx, StudentID)
 	if err != nil {
 		return errorx.WrapError(errorx.FetchErr, err)
 	}
-	score = score - 100
+	score = score - 20
 	if score < 0 {
 		score = 0
 	}
@@ -100,7 +123,7 @@ func ReduceScore(ctx context.Context, svcCtx *svc.ServiceContext, StudentID stri
 	return nil
 }
 
-// 每月恢复信誉分
+// 每周恢复信誉分
 func RenewScore(ctx context.Context, svcCtx *svc.ServiceContext) error {
 	err := svcCtx.UserModel.RenewScore(ctx)
 	if err != nil {
@@ -122,5 +145,18 @@ func CleanExpiredSeats(ctx context.Context, svcCtx *svc.ServiceContext) error {
 	}
 
 	log.Println("过期座位信息清理成功")
+	return nil
+}
+
+// 每天晚上完成预约
+func CompletedReservation(ctx context.Context, svcCtx *svc.ServiceContext) error {
+	err := svcCtx.SeatModel.CompletedReservation(ctx)
+
+	if err != nil {
+		log.Println("预约完成失败的说：", err)
+		return errorx.WrapError(errorx.UpdateErr, err)
+	}
+
+	log.Println("预约完成")
 	return nil
 }

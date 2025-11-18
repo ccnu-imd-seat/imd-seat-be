@@ -110,6 +110,7 @@ func (l *ReserveSeatLogic) ReserveSeat(req *types.ReserveRequest) (*types.Reserv
 | 4001 | 预约请求不合规 |
 | 4002 | 已经签到过了 |
 | 4003 | 您还未签到 |
+| 4004 | 已超过签到时间 |
 
 ### 默认错误码
 | 错误码 | 描述 |
@@ -121,10 +122,8 @@ func (l *ReserveSeatLogic) ReserveSeat(req *types.ReserveRequest) (*types.Reserv
 |--------|------|
 | booked | 已预约 |
 | effective | 已生效未签到 |
-| checked in | 已签到 |
 | cancelled | 已取消 |
 | completed | 预约已完成 |
-| one default | 已未到一次 |
 | violated | 已违约 |
 | available | 可预约 |
 

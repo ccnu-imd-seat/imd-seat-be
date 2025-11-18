@@ -3,8 +3,6 @@ package logic
 import (
 	"context"
 	"errors"
-	"fmt"
-	"html"
 	"io"
 	"net"
 	"net/http"
@@ -19,9 +17,7 @@ import (
 	"imd-seat-be/internal/svc"
 	"imd-seat-be/internal/types"
 
-	"github.com/PuerkitoBio/goquery"
 	"github.com/zeromicro/go-zero/core/logx"
-	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
 
 type LoginLogic struct {
@@ -38,35 +34,24 @@ func NewLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LoginLogic 
 	}
 }
 
-// 3.完整的
 func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginRes, err error) {
 	client := l.client()
-	//从ccnu主页获取相关参数
+
 	params, err := l.makeAccountPreflightRequest(client)
 	if err != nil {
-		return nil, err
+		return nil, errorx.WrapError(errorx.SYSTEM_ERROR, err)
 	}
 
-	client, err = l.loginClient(l.ctx, client, req.Username, req.Password, params)
+	_, err = l.loginClient(l.ctx, client, req.Username, req.Password, params)
 	if err != nil {
-		return nil, err
-	}
-
-	client, err = l.xkLoginClient(client)
-	if err != nil {
-		return nil, err
-	}
-
-	username, err := l.GetNameFromXK(l.ctx, client)
-	if err != nil {
-		return nil, err
+		return nil, errorx.WrapError(errorx.SYSTEM_ERROR, err)
 	}
 
 	_, err = l.svcCtx.UserModel.FindScoreByID(l.ctx, req.Username)
-	if err == sqlx.ErrNotFound {
+	if err != nil {
 		newUser := &model.User{
 			StudentId: req.Username,
-			Score:     300,
+			Score:     100,
 		}
 		_, err = l.svcCtx.UserModel.Insert(l.ctx, newUser)
 		if err != nil {
@@ -77,72 +62,12 @@ func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginRes, err error
 	resp = &types.LoginRes{
 		Base: response.Success(),
 		Data: types.LoginData{
-			Name:      username,
+			Name:      "",
 			StudentId: req.Username,
 		},
 	}
 
 	return resp, nil
-}
-
-// 2.教务系统获取名字
-func (l *LoginLogic) GetNameFromXK(ctx context.Context, client *http.Client) (string, error) {
-	requestUrl := "https://xk.ccnu.edu.cn/jwglxt/xtgl/index_cxYhxxIndex.html?xt=jw&localeKey=zh_CN&gnmkdm=index"
-
-	resp, err := client.Get(requestUrl)
-	if err != nil {
-		return "", errorx.WrapError(errorx.CCNUSERVER_ERROR, err)
-	}
-	defer resp.Body.Close()
-
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
-	if err != nil {
-		return "", errorx.WrapError(errorx.CCNUSERVER_ERROR, fmt.Errorf("HTML解析失败: %v", err))
-	}
-
-	// 精准定位目标元素
-	nameSection := doc.Find("div.media-body h4.media-heading").First()
-	if nameSection.Length() == 0 {
-		return "", errorx.WrapError(errorx.CCNUSERVER_ERROR, errors.New("未找到姓名元素"))
-	}
-
-	// 处理HTML实体和特殊空格
-	rawText := html.UnescapeString(nameSection.Text())
-
-	// 强化文本清洗逻辑
-	cleanedText := strings.NewReplacer(
-		"\u00A0", " ", // Unicode非断行空格
-		"&nbsp;", " ", // HTML实体空格
-		"\u3000", " ", // 全角空格
-	).Replace(rawText)
-
-	// 使用正则精确匹配
-	re := regexp.MustCompile(`^([^\s]+)`) // 匹配首个非空字段
-	matches := re.FindStringSubmatch(cleanedText)
-
-	if len(matches) < 2 {
-		return "", errorx.WrapError(errorx.CCNUSERVER_ERROR, errors.New("姓名格式异常"))
-	}
-
-	return matches[1], nil
-}
-
-// 2.xkLoginClient 教务系统模拟登录
-func (l *LoginLogic) xkLoginClient(client *http.Client) (*http.Client, error) {
-
-	//华师本科生院登陆
-	request, err := http.NewRequest("GET", "https://account.ccnu.edu.cn/cas/login?service=http%3A%2F%2Fxk.ccnu.edu.cn%2Fsso%2Fpziotlogin", nil)
-	if err != nil {
-		return nil, errorx.WrapError(errorx.CCNUSERVER_ERROR, err)
-	}
-
-	resp, err := client.Do(request)
-	if err != nil {
-		return nil, errorx.WrapError(errorx.CCNUSERVER_ERROR, err)
-	}
-	defer resp.Body.Close()
-
-	return client, nil
 }
 
 // 1.登陆ccnu通行证

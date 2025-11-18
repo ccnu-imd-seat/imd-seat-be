@@ -2,14 +2,24 @@
 Name: "seat-service"
 Host: "0.0.0.0"
 Port: 8080
+Domain: "https://hello.world"
   
 MySQL:
-  Name: "seat_database"         
-  User: "root"                  
-  Password: "password"         
-  Host: "localhost"             
-  Port: 3306                    
+  Name: "seat_database"
+  User: "root"
+  Password: "password"
+  Host: "mysql"
+  Port: 3306
 
 Auth:
   AccessSecret: "your_jwt_secret_key"  # JWT 密钥
   AccessExpire: 3600                # JWT Token 过期时间（单位：秒）
+
+Qiniu:
+  AccessKey: "access_key"
+  SecretKey: "secret_key"
+  Bucket: "bucket"
+  Domain: "domain"
+
+Admin:
+  id: ["1", "2", "3"]

@@ -31,6 +31,8 @@ func NewCancelReservationLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 }
 
 func (l *CancelReservationLogic) CancelReservation(req *types.CancelReservationReq) (resp *types.GeneralRes, err error) {
+	debug := l.ctx.Value("DEBUG_MODE")
+
 	studentID, ok := contextx.GetStudentID(l.ctx)
 	if !ok {
 		return nil, errorx.WrapError(errorx.JWTError, errors.New("token读取学号失败"))
@@ -50,7 +52,7 @@ func (l *CancelReservationLogic) CancelReservation(req *types.CancelReservationR
 	}
 
 	//检验是否合规
-	if !l.CheckCancelRule(ReservationInfro) {
+	if !l.CheckCancelRule(ReservationInfro) && debug != "1" {
 		return nil, errorx.WrapError(errorx.ViolateErr, errors.New("取消请求不合规"))
 	}
 
@@ -75,10 +77,10 @@ func (l *CancelReservationLogic) CancelReservation(req *types.CancelReservationR
 func (l *CancelReservationLogic) CheckCancelRule(ReservationInfro *model.Reservation) bool {
 	pre := ReservationInfro.Date.AddDate(0, 0, -1)
 	target := time.Date(
-		pre.Year(), pre.Month(), pre.Day(), 18, 0, 0, 0, pre.Location(),
+		pre.Year(), pre.Month(), pre.Day(), 21, 0, 0, 0, pre.Location(),
 	)
 	now := time.Now().In(target.Location()).Truncate(time.Second)
-	if ReservationInfro.Type == "week" || !now.Before(target) {
+	if !now.Before(target) {
 		return false
 	}
 	return true
