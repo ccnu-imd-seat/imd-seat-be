@@ -19,7 +19,9 @@ var (
 	FetchErr  = NewError(3001, "数据库查询失败")
 	CreateErr = NewError(3002, "数据库创建失败")
 	UpdateErr = NewError(3003, "数据库更新失败")
-	DeleteErr = NewError(3003, "数据库删除失败")
+	DeleteErr = NewError(3004, "数据库删除失败")
+	SaveErr   = NewError(3005, "保存到服务器错误")
+	NotFound  = NewError(3006, "无此文件")
 )
 
 // 预约模块失败 (4000-4999)

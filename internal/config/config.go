@@ -9,6 +9,8 @@ import (
 type Config struct {
 	rest.RestConf
 
+	Domain string
+
 	Auth struct {
 		AccessSecret string
 		AccessExpire int64
@@ -22,11 +24,15 @@ type Config struct {
 		Port     int
 	}
 
-	Qiniu struct{
+	Qiniu struct {
 		AccessKey string
 		SecretKey string
-		Domain string
-		Bucket string
+		Domain    string
+		Bucket    string
+	}
+
+	Admin struct {
+		Id []string
 	}
 }
 

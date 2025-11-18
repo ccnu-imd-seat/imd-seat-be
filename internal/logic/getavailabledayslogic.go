@@ -115,8 +115,8 @@ func canWeekReserve() bool {
 	hour := now.Hour()
 	minute := now.Minute()
 
-	// 判断是否在 9:00 ~ 18:00 之间
-	if hour < 9 || (hour == 18 && minute > 0) || hour > 18 {
+	// 判断是否在 9:00 ~ 21:00 之间
+	if hour < 9 || (hour == 21 && minute > 0) || hour > 21 {
 		return false
 	}
 

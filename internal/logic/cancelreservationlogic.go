@@ -61,7 +61,7 @@ func (l *CancelReservationLogic) CancelReservation(req *types.CancelReservationR
 	if err != nil {
 		return nil, errorx.WrapError(errorx.UpdateErr, err)
 	}
-	
+
 	//释放座位，改状态为可预约
 	err = l.svcCtx.SeatModel.ChangeSeatStatusByType(l.ctx, ReservationInfro.Date, types.AvaliableStatus, ReservationInfro.Seat, ReservationInfro.Type)
 	if err != nil {
@@ -77,10 +77,10 @@ func (l *CancelReservationLogic) CancelReservation(req *types.CancelReservationR
 func (l *CancelReservationLogic) CheckCancelRule(ReservationInfro *model.Reservation) bool {
 	pre := ReservationInfro.Date.AddDate(0, 0, -1)
 	target := time.Date(
-		pre.Year(), pre.Month(), pre.Day(), 18, 0, 0, 0, pre.Location(),
+		pre.Year(), pre.Month(), pre.Day(), 21, 0, 0, 0, pre.Location(),
 	)
 	now := time.Now().In(target.Location()).Truncate(time.Second)
-	if ReservationInfro.Type == "week" || !now.Before(target) {
+	if !now.Before(target) {
 		return false
 	}
 	return true

@@ -32,7 +32,6 @@ func (l *UploadSeatCsvLogic) UploadSeatCsv(req *types.UploadSeatRequest) (resp *
 		if err != nil {
 			return nil, err
 		}
-
 		_, err = l.svcCtx.RoomModel.Insert(l.ctx, &model.Room{
 			Room:   room.Room,
 			Status: types.AvaliableStatus,

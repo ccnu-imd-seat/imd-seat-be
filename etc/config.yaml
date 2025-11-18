@@ -2,6 +2,7 @@
 Name: "seat-service"
 Host: "0.0.0.0"
 Port: 8080
+Domain: "https://hello.world"
   
 MySQL:
   Name: "seat_database"
@@ -19,3 +20,6 @@ Qiniu:
   SecretKey: "secret_key"
   Bucket: "bucket"
   Domain: "domain"
+
+Admin:
+  id: ["1", "2", "3"]

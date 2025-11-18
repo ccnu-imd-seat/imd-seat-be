@@ -21,7 +21,8 @@ type (
 		GetTodayReservationByStudentId(ctx context.Context, studentId string, seat string) (*Reservation, error)
 		GetReservationByDate(ctx context.Context, date time.Time) ([]*Reservation, error)
 		GetAnydayReservationByStudentId(ctx context.Context, studentId string, seat string, date string) (*Reservation, error)
-
+		GetAllReservations(ctx context.Context) ([]*Reservation, error)
+		HasActiveReservation(ctx context.Context, studentId string) (bool, error)
 		reservationModel
 		withSession(session sqlx.Session) ReservationModel
 	}
@@ -30,6 +31,25 @@ type (
 		*defaultReservationModel
 	}
 )
+
+func (c *customReservationModel) HasActiveReservation(ctx context.Context, studentId string) (bool, error) {
+	query := fmt.Sprintf(
+		"SELECT COUNT(1) FROM %s WHERE `student_id` = ? AND `status` IN (?, ?)",
+		c.table,
+	)
+
+	var count int
+	err := c.conn.QueryRowCtx(ctx, &count, query,
+		studentId,
+		types.BookedStatus,
+		types.EffectiveStatus,
+	)
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}
 
 // 更新预约状态
 func (c *customReservationModel) UpdateReservstionMessage(ctx context.Context, id int64, status string) error {
@@ -69,7 +89,7 @@ func (c *customReservationModel) GetTodayReservationByStudentId(ctx context.Cont
 	status := types.BookedStatus
 	err := c.conn.QueryRowCtx(ctx, &reservation, query, studentId, dateStr, seat, status)
 	if err != nil {
-		return nil, err
+		return nil, errxxm
 	}
 	return &reservation, nil
 }
@@ -91,6 +111,17 @@ func (c *customReservationModel) GetReservationByDate(ctx context.Context, date 
 	query := fmt.Sprintf("SELECT %s FROM %s WHERE `date` = ?", reservationRows, c.table)
 	var reservations []*Reservation
 	err := c.conn.QueryRowsCtx(ctx, &reservations, query, date)
+	if err != nil {
+		return nil, err
+	}
+	return reservations, nil
+}
+
+// GetAllReservations 查找所有预约记录
+func (c *customReservationModel) GetAllReservations(ctx context.Context) ([]*Reservation, error) {
+	query := fmt.Sprintf("SELECT %s FROM %s", reservationRows, c.table)
+	var reservations []*Reservation
+	err := c.conn.QueryRowsCtx(ctx, &reservations, query)
 	if err != nil {
 		return nil, err
 	}

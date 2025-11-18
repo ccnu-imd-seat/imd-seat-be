@@ -45,6 +45,9 @@ type (
 	CancelReservationReq {
 		ID string `path:"id"`
 	}
+	SupremeData {
+		data []ReservationData `json:"reservations"`
+	}
 )
 
 @server (
@@ -64,5 +67,8 @@ service seat-api {
 
 	@handler getSeatInfo
 	get /reservation/seats returns (SeatListRes)
+
+	@handler getSupremeData
+	get /revervation/get_supreme_data returns (SupremeData)	
 }
 

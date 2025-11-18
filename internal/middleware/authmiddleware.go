@@ -44,3 +44,41 @@ func (m *AuthMiddleware) AuthHandle(next http.HandlerFunc) http.HandlerFunc {
 		next(w, r)
 	}
 }
+
+func (m *AuthMiddleware) AuthHandleAdmin(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		AuthHeader := r.Header.Get("Authorization")
+		if AuthHeader == "" || !strings.HasPrefix(AuthHeader, "Bearer ") {
+			httpx.ErrorCtx(r.Context(), w, errorx.WrapError(errorx.JWTError, errors.New("invalid authoriztion")))
+			return
+		}
+		token := strings.TrimPrefix(AuthHeader, "Bearer ")
+		claims, err := m.r.ParseToken(token)
+		if err != nil {
+			logx.Errorf("解析token失败:%v", err)
+			httpx.ErrorCtx(r.Context(), w, errorx.WrapError(errorx.JWTError, err))
+			return
+		}
+
+		Is := contains(m.Cfg.Admin.Id, claims.StudentId)
+
+		if !Is {
+			httpx.ErrorCtx(r.Context(), w, errorx.WrapError(errorx.JWTError, errors.New("非管理员账号")))
+			return
+		}
+
+		// 将学号信息写入context
+		ctx := contextx.SetStudentID(r.Context(), claims.StudentId)
+		r = r.WithContext(ctx)
+		next(w, r)
+	}
+}
+
+func contains(slice []string, str string) bool {
+	for _, v := range slice {
+		if v == str {
+			return true
+		}
+	}
+	return false
+}
