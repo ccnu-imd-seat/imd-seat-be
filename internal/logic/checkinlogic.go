@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"imd-seat-be/internal/model"
@@ -50,28 +51,38 @@ func (l *CheckInLogic) CheckIn(req *types.CheckIn) (resp *types.GeneralRes, err 
 
 	_, err = time.Parse(time.DateOnly, debug_day.(string))
 
+	// 这里的错误交给最下方else逻辑处理
 	if debug == "1" && err == nil {
 		reservation, err = l.svcCtx.ReservationModel.GetAnydayReservationByStudentId(l.ctx, studentID, req.Seatid, debug_day.(string))
-		if err != nil {
-			return nil, errorx.WrapError(errorx.FetchErr, err)
-		}
 	} else {
 		reservation, err = l.svcCtx.ReservationModel.GetTodayReservationByStudentId(l.ctx, studentID, req.Seatid)
-		if err != nil {
-			return nil, errorx.WrapError(errorx.FetchErr, err)
-		}
 	}
 
-	if reservation.Status == types.EffectiveStatus {
+	// 已经签到的预约单
+	if reservation != nil && reservation.Status == types.EffectiveStatus {
 		return nil, errorx.WrapError(errorx.AlreadyErr, errors.New("请勿重复签到"))
-	} else if reservation.Status == types.BookedStatus {
+		// 已经预约的预约单
+	} else if reservation != nil && reservation.Status == types.BookedStatus {
 		reservation.Status = types.EffectiveStatus
+		// 更新预约单
 		err := l.svcCtx.ReservationModel.Update(l.ctx, reservation)
 		if err != nil {
 			return nil, errorx.WrapError(errorx.UpdateErr, err)
 		}
+
+		now := time.Now().Format("2006-01-02")
+		t, err := time.ParseInLocation("2006-01-02", now, time.Local)
+		if err != nil {
+			return nil, errorx.WrapError(errorx.DefaultErr, errors.New("解析时间错误"))
+		}
+
+		// 更新当天座位
+		err = l.svcCtx.SeatModel.ChangeSeatStatusByType(l.ctx, t, types.EffectiveStatus, reservation.Seat, "day")
+		if err != nil {
+			return nil, errorx.WrapError(errorx.UpdateErr, err)
+		}
 	} else {
-		return nil, errorx.WrapError(errorx.NonCheckErr, errors.New("请预约座位"))
+		return nil, errorx.WrapError(errorx.NonCheckErr, fmt.Errorf("未预约该座位或获取数据库出错：%s", err))
 	}
 
 	resp = response.GeneralRes()

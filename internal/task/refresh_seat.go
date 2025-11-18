@@ -51,7 +51,7 @@ func RegisterTasks(ctx context.Context, svcCtx *svc.ServiceContext) {
 	if err != nil {
 		log.Println("注册定时清理座位信息失败:", err)
 	}
-	
+
 	// 每天晚上 11 点完成预约
 	_, err = c.AddFunc("0 0 23 * * *", func() {
 		if err := CompletedReservation(ctx, svcCtx); err != nil {
@@ -74,15 +74,15 @@ func RegisterTasks(ctx context.Context, svcCtx *svc.ServiceContext) {
 // 查找所有未签到的预约,更新状态为违约
 func Violation(ctx context.Context, svcCtx *svc.ServiceContext) error {
 	now := time.Now().Format("2006-01-02")
-	parsedTime, err := time.Parse("2006-01-02", now)
+	parsedTime, err := time.ParseInLocation("2006-01-02", now, time.Local)
 	if err != nil {
 		return errorx.WrapError(errorx.DefaultErr, errors.New("解析时间错误"))
 	}
+	// 根据当天日期获取预约（booked状态）
 	Reservations, err := svcCtx.ReservationModel.GetReservationByStatus(ctx, parsedTime, types.BookedStatus)
 	if err != nil {
 		return errorx.WrapError(errorx.FetchErr, err)
 	}
-
 	for _, reservation := range Reservations {
 		err := svcCtx.ReservationModel.UpdateReservstionMessage(ctx, reservation.Id, types.ViolatedStatus)
 		if err != nil {

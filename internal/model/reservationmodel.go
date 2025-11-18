@@ -82,24 +82,22 @@ func (c *customReservationModel) GetReservationByStudentId(ctx context.Context, 
 
 // 根据根据学号查找当天预约进行签到处理
 func (c *customReservationModel) GetTodayReservationByStudentId(ctx context.Context, studentId string, seat string) (*Reservation, error) {
-	query := fmt.Sprintf("SELECT %s FROM %s WHERE `student_id` = ? and `date` = ? and `seat` = ? and `status` = ?", reservationRows, c.table)
+	query := fmt.Sprintf("SELECT %s FROM %s WHERE `student_id` = ? and `date` = ? and `seat` = ?", reservationRows, c.table)
 	var reservation Reservation
 	date := time.Now()
 	dateStr := date.Format(time.DateOnly)
-	status := types.BookedStatus
-	err := c.conn.QueryRowCtx(ctx, &reservation, query, studentId, dateStr, seat, status)
+	err := c.conn.QueryRowCtx(ctx, &reservation, query, studentId, dateStr, seat)
 	if err != nil {
-		return nil, errxxm
+		return nil, err
 	}
 	return &reservation, nil
 }
 
 // 根据根据学号和日期查找当天预约进行签到处理
 func (c *customReservationModel) GetAnydayReservationByStudentId(ctx context.Context, studentId string, seat string, date string) (*Reservation, error) {
-	query := fmt.Sprintf("SELECT %s FROM %s WHERE `student_id` = ? and `date` = ? and `seat` = ? and `status` = ?", reservationRows, c.table)
+	query := fmt.Sprintf("SELECT %s FROM %s WHERE `student_id` = ? and `date` = ? and `seat` = ?", reservationRows, c.table)
 	var reservation Reservation
-	status := types.BookedStatus
-	err := c.conn.QueryRowCtx(ctx, &reservation, query, studentId, date, seat, status)
+	err := c.conn.QueryRowCtx(ctx, &reservation, query, studentId, date, seat)
 	if err != nil {
 		return nil, err
 	}
