@@ -28,7 +28,7 @@ var (
 var (
 	ViolateErr    = NewError(4001, "预约请求不合规")
 	AlreadyErr    = NewError(4002, "已经签到过了")
-	NonCheckErr   = NewError(4003, "您还未签到")
+	NonCheckErr   = NewError(4003, "未预约该座位或获取数据库出错")
 	AfterCheckErr = NewError(4004, "已超过签到时间")
 )
 

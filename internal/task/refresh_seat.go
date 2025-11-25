@@ -17,7 +17,7 @@ func RegisterTasks(ctx context.Context, svcCtx *svc.ServiceContext) {
 	c := cron.New(cron.WithSeconds())
 
 	//每天十二点进行更新
-	_, err := c.AddFunc("0 12 0 * * *", func() {
+	_, err := c.AddFunc("12 30 0 * * *", func() {
 		if err := Violation(ctx, svcCtx); err != nil {
 			log.Println("更新预约状态失败:", err)
 		} else {
