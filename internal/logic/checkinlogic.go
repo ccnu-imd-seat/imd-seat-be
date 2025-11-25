@@ -42,8 +42,8 @@ func (l *CheckInLogic) CheckIn(req *types.CheckIn) (resp *types.GeneralRes, err 
 
 	if debug != "1" {
 		now := time.Now()
-		// 获取当天 12:00 时间
-		noon := time.Date(now.Year(), now.Month(), now.Day(), 12, 0, 0, 0, now.Location())
+		// 获取当天 12:30 时间
+		noon := time.Date(now.Year(), now.Month(), now.Day(), 12, 30, 0, 0, now.Location())
 		if now.After(noon) {
 			return nil, errorx.WrapError(errorx.AfterCheckErr, errors.New("无法签到"))
 		}

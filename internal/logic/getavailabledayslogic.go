@@ -34,6 +34,7 @@ func (l *GetAvailableDaysLogic) GetAvailableDays(Type string) (resp *types.Avail
 	if err != nil {
 		return nil, errorx.WrapError(errorx.FetchErr, err)
 	}
+
 	resp = &types.AvailableDatesRes{
 		Base: response.Success(),
 		Data: types.AvailableDates{
@@ -85,7 +86,18 @@ func SyncAvaliableday(Type string, dates []time.Time, debug any) []types.DateInf
 	} else if Type == "day" && (canDayReserve() || debug == "1") { // day类型，只返回本周剩余天（不含今天），若今天是周日不返回
 		now := time.Now()
 		todayWeekday := now.Weekday()
+
 		if todayWeekday == time.Sunday {
+			// 下周日
+			nextSunday := now.AddDate(0, 0, 7)
+			for _, d := range dates {
+				if d.After(now) && !d.After(nextSunday) {
+					AvailableDates = append(AvailableDates, types.DateInfo{
+						Type: "day",
+						Date: d.Format("2006-01-02"),
+					})
+				}
+			}
 		} else {
 			// 返回dates中大于今天且属于本周（到周日）的日期
 			// 本周周日

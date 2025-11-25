@@ -38,6 +38,8 @@ func (l *ReserveSeatLogic) ReserveSeat(req *types.ReserveSeatReq) (resp *types.R
 	if err := l.svcCtx.UserModel.CheckUserExist(l.ctx, studentID); err != nil {
 		return nil, errorx.WrapError(errorx.FetchErr, err)
 	}
+
+	// 按照地区解析时间
 	format := "2006-01-02"
 	t, err := time.ParseInLocation(format, req.Date, time.Local)
 	if err != nil {
@@ -70,7 +72,7 @@ func (l *ReserveSeatLogic) ReserveSeat(req *types.ReserveSeatReq) (resp *types.R
 	}
 
 	// 检查用户是否已有有效预约
-	has, err := l.svcCtx.ReservationModel.HasActiveReservation(l.ctx, studentID)
+	has, err := l.svcCtx.ReservationModel.HasBookedReservationInSelectedDay(l.ctx, studentID, req.Date)
 	if err != nil {
 		return nil, errorx.WrapError(errorx.FetchErr, err)
 	}
@@ -128,22 +130,18 @@ func CheckScore(ctx context.Context, svcCtx *svc.ServiceContext, StudentID strin
 // 检验预约时间是否符合规则
 func CheckRule(date time.Time, types string) bool {
 	now := time.Now()
+	// 星期天为0
 	weekday := int(now.Weekday())
-	if types == "day" {
-		daysUntilSunday := (7 - weekday) % 7
-		sunday := now.AddDate(0, 0, daysUntilSunday)
-		if date.Before(sunday) && InTimeRange(now, 18, 21) {
-			return true
-		}
-	} else if types == "week" {
-		if weekday == 0 && InTimeRange(now, 9, 21) {
-			return true
-		}
+
+	if types == "day" && InTimeRange(now, 18, 21) {
+		return true
+	} else if types == "week" && weekday == 0 && InTimeRange(now, 9, 21) {
+		return true
 	}
 	return false
 }
 
 func InTimeRange(t time.Time, startHour, EndHour int) bool {
 	hour := t.Hour()
-	return hour >= startHour && hour <= EndHour
+	return hour >= startHour && hour < EndHour
 }

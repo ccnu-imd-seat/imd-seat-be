@@ -22,7 +22,7 @@ type (
 		GetReservationByDate(ctx context.Context, date time.Time) ([]*Reservation, error)
 		GetAnydayReservationByStudentId(ctx context.Context, studentId string, seat string, date string) (*Reservation, error)
 		GetAllReservations(ctx context.Context) ([]*Reservation, error)
-		HasActiveReservation(ctx context.Context, studentId string) (bool, error)
+		HasBookedReservationInSelectedDay(ctx context.Context, studentId string, date string) (bool, error)
 		reservationModel
 		withSession(session sqlx.Session) ReservationModel
 	}
@@ -32,9 +32,9 @@ type (
 	}
 )
 
-func (c *customReservationModel) HasActiveReservation(ctx context.Context, studentId string) (bool, error) {
+func (c *customReservationModel) HasBookedReservationInSelectedDay(ctx context.Context, studentId string, date string) (bool, error) {
 	query := fmt.Sprintf(
-		"SELECT COUNT(1) FROM %s WHERE `student_id` = ? AND `status` IN (?, ?)",
+		"SELECT COUNT(1) FROM %s WHERE `student_id` = ? AND `status` = ? AND `date` = ?",
 		c.table,
 	)
 
@@ -42,7 +42,7 @@ func (c *customReservationModel) HasActiveReservation(ctx context.Context, stude
 	err := c.conn.QueryRowCtx(ctx, &count, query,
 		studentId,
 		types.BookedStatus,
-		types.EffectiveStatus,
+		date,
 	)
 	if err != nil {
 		return false, err
