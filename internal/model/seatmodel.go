@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"imd-seat-be/internal/pkg/errorx"
 	"imd-seat-be/internal/types"
+	"log"
 	"time"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -146,12 +147,25 @@ func (c *customSeatModel) DeleteSeatsBeforeDate(ctx context.Context, date string
 
 // 查询今天的预约单并标记成已生效
 func (c *customSeatModel) CompletedReservation(ctx context.Context) error {
-	today := time.Now().Format(time.DateOnly)
+	now := time.Now().Format("2006-01-02")
+	parsedTime, _ := time.ParseInLocation("2006-01-02", now, time.Local)
 	query := fmt.Sprintf("UPDATE %s SET `status` = ? WHERE `date` = ? AND `status` = ?", c.table)
-	_, err := c.conn.ExecCtx(ctx, query, types.CompletedStatus, today, types.EffectiveStatus)
+	reservation, err := c.conn.ExecCtx(ctx, query, types.CompletedStatus, parsedTime, types.EffectiveStatus)
 	if err != nil {
 		return errorx.WrapError(errorx.UpdateErr, fmt.Errorf("更新已完成预约失败: %w", err))
 	}
+
+	// 获取成功更新的行数
+	rowsAffected, err := reservation.RowsAffected()
+	if err != nil {
+		log.Printf("预约完成更新成功，但无法获取影响行数: %v\n", err)
+		return nil // 虽然无法获取行数，但更新本身是成功的
+	}
+
+	// 完成 log
+	// 输出成功更新的记录数
+	log.Printf("预约完成：成功更新了 %d 条预约记录\n", rowsAffected)
+
 	return nil
 }
 

@@ -157,6 +157,5 @@ func CompletedReservation(ctx context.Context, svcCtx *svc.ServiceContext) error
 		return errorx.WrapError(errorx.UpdateErr, err)
 	}
 
-	log.Println("预约完成")
 	return nil
 }
