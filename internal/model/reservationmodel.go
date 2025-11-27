@@ -23,6 +23,7 @@ type (
 		GetAnydayReservationByStudentId(ctx context.Context, studentId string, seat string, date string) (*Reservation, error)
 		GetAllReservations(ctx context.Context) ([]*Reservation, error)
 		HasBookedReservationInSelectedDay(ctx context.Context, studentId string, date string) (bool, error)
+		CompleteEffectiveReservations(ctx context.Context) error
 		reservationModel
 		withSession(session sqlx.Session) ReservationModel
 	}
@@ -124,6 +125,20 @@ func (c *customReservationModel) GetAllReservations(ctx context.Context) ([]*Res
 		return nil, err
 	}
 	return reservations, nil
+}
+
+// CompleteEffectiveReservations 将今天所有已生效的预约标记为已完成
+func (c *customReservationModel) CompleteEffectiveReservations(ctx context.Context) error {
+	now := time.Now().Format("2006-01-02")
+	query := fmt.Sprintf("UPDATE %s SET `status` = ? WHERE `date` = ? AND `status` = ?", c.table)
+	result, err := c.conn.ExecCtx(ctx, query, types.CompletedStatus, now, types.EffectiveStatus)
+	if err != nil {
+		return fmt.Errorf("更新预约状态为已完成失败: %w", err)
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	fmt.Printf("预约完成：成功更新了 %d 条预约记录\n", rowsAffected)
+	return nil
 }
 
 // NewReservationModel returns a model for the database table.

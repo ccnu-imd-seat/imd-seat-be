@@ -145,26 +145,25 @@ func (c *customSeatModel) DeleteSeatsBeforeDate(ctx context.Context, date string
 	return nil
 }
 
-// 查询今天的预约单并标记成已生效
+// 查询今天的预约单并标记成已完成（注意：此方法只更新座位表，预约表需要在ReservationModel中更新）
 func (c *customSeatModel) CompletedReservation(ctx context.Context) error {
 	now := time.Now().Format("2006-01-02")
 	parsedTime, _ := time.ParseInLocation("2006-01-02", now, time.Local)
 	query := fmt.Sprintf("UPDATE %s SET `status` = ? WHERE `date` = ? AND `status` = ?", c.table)
-	reservation, err := c.conn.ExecCtx(ctx, query, types.CompletedStatus, parsedTime, types.EffectiveStatus)
+	result, err := c.conn.ExecCtx(ctx, query, types.CompletedStatus, parsedTime, types.EffectiveStatus)
 	if err != nil {
-		return errorx.WrapError(errorx.UpdateErr, fmt.Errorf("更新已完成预约失败: %w", err))
+		return errorx.WrapError(errorx.UpdateErr, fmt.Errorf("更新座位状态为已完成失败: %w", err))
 	}
 
 	// 获取成功更新的行数
-	rowsAffected, err := reservation.RowsAffected()
+	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		log.Printf("预约完成更新成功，但无法获取影响行数: %v\n", err)
+		log.Printf("座位状态更新成功，但无法获取影响行数: %v\n", err)
 		return nil // 虽然无法获取行数，但更新本身是成功的
 	}
 
-	// 完成 log
 	// 输出成功更新的记录数
-	log.Printf("预约完成：成功更新了 %d 条预约记录\n", rowsAffected)
+	log.Printf("座位完成：成功更新了 %d 条座位记录\n", rowsAffected)
 
 	return nil
 }
